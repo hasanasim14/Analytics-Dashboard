@@ -23,7 +23,6 @@ const Cards = () => {
         );
         const data = await response.json();
         setCardsData(data?.data);
-        console.log("Cards data:", data);
       } catch (error) {}
     };
     fetchCardsData();
