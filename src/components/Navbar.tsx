@@ -5,7 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 const Navbar = () => {
   return (
-    <div className="w-full h-13 bg-black sticky top-0 z-50">
+    <div className="w-full h-13 sticky top-0 z-50 bg-[rgba(32,32,32,0.95)] backdrop-blur-sm">
       <div className="container mx-auto px-4 h-full">
         <div className="flex justify-end items-center h-full">
           <Popover>
