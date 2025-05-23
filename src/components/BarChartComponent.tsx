@@ -1,7 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  XAxis,
+  ResponsiveContainer,
+} from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   type ChartConfig,
@@ -10,73 +16,10 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
-const chartData = [
-  { date: "2024-04-01", cost: 1200 },
-  { date: "2024-04-02", cost: 900 },
-  { date: "2024-04-03", cost: 1500 },
-  { date: "2024-04-04", cost: 1800 },
-  { date: "2024-04-05", cost: 2100 },
-  { date: "2024-04-06", cost: 1900 },
-  { date: "2024-04-07", cost: 1600 },
-  { date: "2024-04-08", cost: 2300 },
-  { date: "2024-04-09", cost: 850 },
-  { date: "2024-04-10", cost: 1750 },
-  { date: "2024-04-11", cost: 1950 },
-  { date: "2024-04-12", cost: 1650 },
-  { date: "2024-04-13", cost: 2200 },
-  { date: "2024-04-14", cost: 1400 },
-  { date: "2024-04-15", cost: 1250 },
-  { date: "2024-04-16", cost: 1350 },
-  { date: "2024-04-17", cost: 2400 },
-  { date: "2024-04-18", cost: 2100 },
-  { date: "2024-04-19", cost: 1600 },
-  { date: "2024-04-20", cost: 950 },
-  { date: "2024-04-21", cost: 1400 },
-  { date: "2024-04-22", cost: 1700 },
-  { date: "2024-04-23", cost: 1350 },
-  { date: "2024-04-24", cost: 2050 },
-  { date: "2024-04-25", cost: 1850 },
-  { date: "2024-04-26", cost: 800 },
-  { date: "2024-04-27", cost: 2250 },
-  { date: "2024-04-28", cost: 1300 },
-  { date: "2024-04-29", cost: 1950 },
-  { date: "2024-04-30", cost: 2350 },
-  { date: "2024-05-01", cost: 1450 },
-  { date: "2024-05-02", cost: 1950 },
-  { date: "2024-05-03", cost: 1750 },
-  { date: "2024-05-04", cost: 2250 },
-  { date: "2024-05-05", cost: 2450 },
-  { date: "2024-05-06", cost: 2600 },
-  { date: "2024-05-07", cost: 2050 },
-  { date: "2024-05-08", cost: 1350 },
-  { date: "2024-05-09", cost: 1750 },
-  { date: "2024-05-10", cost: 1950 },
-  { date: "2024-05-11", cost: 1850 },
-  { date: "2024-05-12", cost: 1550 },
-  { date: "2024-05-13", cost: 1250 },
-  { date: "2024-05-14", cost: 2500 },
-  { date: "2024-05-15", cost: 2450 },
-  { date: "2024-05-16", cost: 2150 },
-  { date: "2024-05-17", cost: 2600 },
-  { date: "2024-05-18", cost: 1950 },
-  { date: "2024-05-19", cost: 1550 },
-  { date: "2024-05-20", cost: 1650 },
-  { date: "2024-05-21", cost: 900 },
-  { date: "2024-05-22", cost: 850 },
-  { date: "2024-05-23", cost: 1850 },
-  { date: "2024-05-24", cost: 1950 },
-  { date: "2024-05-25", cost: 1650 },
-  { date: "2024-05-26", cost: 1550 },
-  { date: "2024-05-27", cost: 2400 },
-  { date: "2024-05-28", cost: 1650 },
-  { date: "2024-05-29", cost: 850 },
-  { date: "2024-05-30", cost: 1950 },
-  { date: "2024-05-31", cost: 1550 },
-];
-
 const chartConfig = {
   views: {
     label: "Daily Cost",
+    color: "#8884d8",
   },
   cost: {
     label: "Cost ($)",
@@ -84,10 +27,97 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
+interface ChartConfigItem {
+  label: string;
+  color: string;
+}
+
+interface DailyCostItem {
+  index: number;
+  date: string;
+  cost: number;
+}
+
+interface ApiResponse {
+  data: DailyCostItem[];
+  success: boolean;
+  message: string;
+}
+
 export function BarChartComponent() {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [activeChart, setActiveChart] =
     React.useState<keyof typeof chartConfig>("cost");
+  const [dailyCostData, setDailyCostData] = React.useState<DailyCostItem[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    const fetchBarChartData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/DailyCost`,
+          {
+            method: "GET",
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const responseData: ApiResponse = await response.json();
+
+        if (responseData.success && responseData.data) {
+          setDailyCostData(responseData.data);
+        } else {
+          throw new Error(responseData.message || "Failed to load data");
+        }
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to fetch data";
+        setError(errorMessage);
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBarChartData();
+  }, []);
+
+  // Calculate bar size based on data length
+  const calculateBarSize = () => {
+    if (!dailyCostData.length) return 30; // default size
+
+    // Adjust bar width based on number of data points
+    const baseWidth = 30;
+    const maxWidth = 50;
+    const minWidth = 15;
+
+    // Calculate width based on number of items (more items = smaller bars)
+    const calculatedWidth = Math.max(
+      minWidth,
+      Math.min(maxWidth, baseWidth - dailyCostData.length * 0.5)
+    );
+
+    return calculatedWidth;
+  };
+
+  if (error) {
+    return (
+      <Card className="w-full">
+        <CardHeader className="border-b p-0">
+          <CardTitle className="font-medium">Total Cost by Day</CardTitle>
+        </CardHeader>
+        <CardContent className="p-6 text-destructive">
+          Error: {error}
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full">
@@ -99,46 +129,62 @@ export function BarChartComponent() {
           config={chartConfig}
           className="aspect-auto h-[250px] w-full"
         >
-          <BarChart
-            accessibilityLayer
-            data={chartData}
-            margin={{
-              left: 12,
-              right: 12,
-            }}
-          >
-            <CartesianGrid vertical={false} />
-            <XAxis
-              dataKey="date"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              minTickGap={32}
-              tickFormatter={(value) => {
-                const date = new Date(value);
-                return date.toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                });
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={dailyCostData}
+              margin={{
+                left: 12,
+                right: 12,
+                top: 12,
+                bottom: 12,
               }}
-            />
-            <ChartTooltip
-              content={
-                <ChartTooltipContent
-                  className="w-[150px]"
-                  nameKey="views"
-                  labelFormatter={(value) => {
-                    return new Date(value).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    });
-                  }}
-                />
-              }
-            />
-            <Bar dataKey={activeChart} fill={`var(--color-${activeChart})`} />
-          </BarChart>
+              barSize={calculateBarSize()}
+              barGap={4}
+            >
+              <CartesianGrid
+                vertical={false}
+                strokeDasharray="3 3"
+                stroke="#f0f0f0"
+              />
+              <XAxis
+                dataKey="date"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                minTickGap={32}
+                tick={{ fill: "#6b7280", fontSize: 12 }}
+                tickFormatter={(value) => {
+                  const date = new Date(value);
+                  return date.toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                  });
+                }}
+              />
+              <ChartTooltip
+                content={
+                  <ChartTooltipContent
+                    className="w-[150px]"
+                    nameKey="views"
+                    formatter={(value) => [`${value}`, " PKR"]}
+                    labelFormatter={(value) => {
+                      return new Date(value).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      });
+                    }}
+                  />
+                }
+              />
+              <Bar
+                dataKey={activeChart}
+                fill={chartConfig[activeChart].color}
+                radius={[4, 4, 0, 0]}
+                animationDuration={1500}
+              />
+            </BarChart>
+          </ResponsiveContainer>
         </ChartContainer>
       </CardContent>
     </Card>
