@@ -21,8 +21,8 @@ const COLORS = {
 };
 
 export function PieChartComponent() {
-  const usedBudget = 9.3;
-  const totalBudget = 90.7;
+  const usedBudget = 47.74;
+  const totalBudget = 500;
   const remainingBudget = totalBudget - usedBudget;
 
   // Calculate percentages
