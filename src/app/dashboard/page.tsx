@@ -1,6 +1,5 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChartComponent } from "@/components/PieChartComponent";
 import { BarChartComponent } from "@/components/BarChartComponent";
 import { SessionSummaryTable } from "@/components/SessionSummaryTable";

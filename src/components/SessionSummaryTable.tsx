@@ -8,6 +8,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
   User,
+  Loader2,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
@@ -28,6 +29,7 @@ import {
   TableRow,
 } from "./ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+// import { format } from "date-fns";
 
 interface Session {
   sessionID: string;
@@ -77,11 +79,9 @@ export function SessionSummaryTable() {
     setIsTranscriptLoading(true);
     setIsDialogOpen(true);
 
-    console.log("the sesison is ", session?.sessionID);
-
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/transcript?sessionid=${session?.sessionID}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/transcript?sessionid=${session.sessionID}`,
         {
           method: "GET",
         }
@@ -129,63 +129,74 @@ export function SessionSummaryTable() {
 
   return (
     <>
-      <Card className="gap-1">
-        <CardHeader>
-          <CardTitle>Session Summary</CardTitle>
+      <Card className="border-none shadow-sm">
+        <CardHeader className="px-6 pt-6 pb-4">
+          <CardTitle className="text-xl font-semibold text-gray-800">
+            Session Summary
+          </CardTitle>
         </CardHeader>
-        <CardContent className="px-4 pt-2">
+        <CardContent className="px-6 pb-6">
           {isLoading ? (
             <div className="flex justify-center items-center h-64">
-              <p>Loading session data...</p>
+              <div className="flex flex-col items-center gap-3">
+                <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                <p className="text-gray-500">Loading session data...</p>
+              </div>
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto rounded-md border">
-                <Table>
-                  <TableHeader className="bg-[#e05d44] text-white">
-                    <TableRow>
+              <div className="rounded-lg border border-gray-200 overflow-hidden">
+                <Table className="min-w-[1000px]">
+                  <TableHeader>
+                    <TableRow className="bg-[#e05d44] text-white hover:bg-[#e05c44] transition-colors">
                       <TableHead className="font-medium text-white">
                         Session ID
                       </TableHead>
                       <TableHead className="font-medium text-white">
-                        Total Cost (PKR)
+                        Total Cost
                       </TableHead>
                       <TableHead className="font-medium text-white">
-                        Total Messages
+                        Messages
                       </TableHead>
                       <TableHead className="font-medium text-white">
-                        Session Start
+                        Start Time
                       </TableHead>
                       <TableHead className="font-medium text-white">
-                        Session End
+                        End Time
                       </TableHead>
                       <TableHead className="font-medium text-white">
-                        Duration (Minutes)
+                        Duration
                       </TableHead>
                     </TableRow>
                   </TableHeader>
+
                   <TableBody>
                     {paginatedData.map((session, index) => (
                       <TableRow
                         key={index}
                         onClick={() => handleRowClick(session)}
-                        className="cursor-pointer hover:bg-gray-50"
+                        className="cursor-pointer transition-colors hover:bg-gray-50/50"
                       >
-                        <TableCell className="max-w-[200px] truncate">
+                        <TableCell className="font-medium text-gray-800 max-w-[200px] truncate">
                           {session.sessionID}
                         </TableCell>
-                        <TableCell>
-                          {session.Total_Cost_PKR.toFixed(2)}
+                        <TableCell className="text-gray-700">
+                          {session.Total_Cost_PKR.toFixed(2)} PKR
                         </TableCell>
-                        <TableCell>{session.Total_Messages}</TableCell>
-                        <TableCell>
-                          {new Date(session.Session_Start).toLocaleString()}
+                        <TableCell className="text-gray-700">
+                          {session.Total_Messages}
                         </TableCell>
-                        <TableCell>
-                          {new Date(session.Session_End).toLocaleString()}
+                        <TableCell className="text-gray-700">
+                          {/* {format(new Date(session.Session_Start), "PPpp")} */}
+                          {session.Session_Start}
                         </TableCell>
-                        <TableCell>
-                          {session.Duration_Mins.toFixed(1)}
+                        <TableCell className="text-gray-700">
+                          {/* {format(new Date( */}
+                          {session.Session_End}
+                          {/* // ), "PPpp")} */}
+                        </TableCell>
+                        <TableCell className="text-gray-700">
+                          {session.Duration_Mins.toFixed(1)} min
                         </TableCell>
                       </TableRow>
                     ))}
@@ -194,9 +205,9 @@ export function SessionSummaryTable() {
               </div>
 
               {/* Pagination */}
-              <div className="flex items-center justify-between mt-4">
-                <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                  <span>Page Size:</span>
+              <div className="flex flex-col sm:flex-row items-center justify-between mt-4 gap-4">
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <span>Rows per page:</span>
                   <Select
                     value={pageSize}
                     onValueChange={(value) => {
@@ -218,46 +229,50 @@ export function SessionSummaryTable() {
                   </Select>
                 </div>
 
-                <div className="text-sm text-muted-foreground">
-                  {startItem} to {endItem} of {totalRecords}
+                <div className="text-sm text-gray-600">
+                  {startItem}-{endItem} of {totalRecords}
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center gap-1">
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="icon"
                     onClick={() => setCurrentPage(1)}
                     disabled={currentPage === 1}
+                    className="text-gray-600 hover:bg-gray-100"
                   >
                     <ChevronsLeft className="h-4 w-4" />
                   </Button>
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="icon"
                     onClick={() =>
                       setCurrentPage((prev) => Math.max(prev - 1, 1))
                     }
                     disabled={currentPage === 1}
+                    className="text-gray-600 hover:bg-gray-100"
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
-                  <div className="text-sm">
+                  <div className="text-sm text-gray-600 mx-2">
                     Page {currentPage} of {totalPages}
                   </div>
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="icon"
                     onClick={() =>
                       setCurrentPage((prev) => Math.min(prev + 1, totalPages))
                     }
                     disabled={currentPage === totalPages}
+                    className="text-gray-600 hover:bg-gray-100"
                   >
                     <ChevronRight className="h-4 w-4" />
                   </Button>
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="icon"
                     onClick={() => setCurrentPage(totalPages)}
                     disabled={currentPage === totalPages}
+                    className="text-gray-600 hover:bg-gray-100"
                   >
                     <ChevronsRight className="h-4 w-4" />
                   </Button>
@@ -269,64 +284,91 @@ export function SessionSummaryTable() {
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Session Transcript</DialogTitle>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col p-0">
+          <DialogHeader className="px-6 pt-6 pb-4 border-b">
+            <DialogTitle className="text-lg font-semibold text-gray-800">
+              Session Transcript
+            </DialogTitle>
           </DialogHeader>
 
           {selectedSession && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h3 className="font-medium">Session ID:</h3>
-                  <p className="text-sm text-muted-foreground">
+            <div className="flex-1 overflow-auto p-6 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <h3 className="text-sm font-medium text-gray-500">
+                    Session ID
+                  </h3>
+                  <p className="text-sm font-mono text-gray-800">
                     {selectedSession.sessionID}
                   </p>
                 </div>
-                <div>
-                  <h3 className="font-medium">Total Cost:</h3>
-                  <p className="text-sm text-muted-foreground">
+                <div className="space-y-1">
+                  <h3 className="text-sm font-medium text-gray-500">
+                    Total Cost
+                  </h3>
+                  <p className="text-sm text-gray-800">
                     {selectedSession.Total_Cost_PKR.toFixed(2)} PKR
                   </p>
                 </div>
-                <div>
-                  <h3 className="font-medium">Total Messages:</h3>
-                  <p className="text-sm text-muted-foreground">
+                <div className="space-y-1">
+                  <h3 className="text-sm font-medium text-gray-500">
+                    Total Messages
+                  </h3>
+                  <p className="text-sm text-gray-800">
                     {selectedSession.Total_Messages}
                   </p>
                 </div>
-                <div>
-                  <h3 className="font-medium">Duration:</h3>
-                  <p className="text-sm text-muted-foreground">
+                <div className="space-y-1">
+                  <h3 className="text-sm font-medium text-gray-500">
+                    Duration
+                  </h3>
+                  <p className="text-sm text-gray-800">
                     {selectedSession.Duration_Mins.toFixed(1)} minutes
                   </p>
                 </div>
               </div>
 
               <div>
-                <h3 className="font-medium mb-2">Conversation:</h3>
+                <h3 className="text-sm font-medium text-gray-500 mb-3">
+                  Conversation
+                </h3>
                 {isTranscriptLoading ? (
                   <div className="flex justify-center items-center h-32">
-                    <p>Loading transcript...</p>
+                    <div className="flex flex-col items-center gap-3">
+                      <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+                      <p className="text-sm text-gray-500">
+                        Loading transcript...
+                      </p>
+                    </div>
                   </div>
                 ) : (
-                  <div className="border rounded-lg p-4 space-y-4">
+                  <div className="space-y-3">
                     {transcript.length > 0 ? (
                       transcript.map((msg, index) => (
                         <div
                           key={index}
-                          className={`p-3 rounded-lg ${
-                            msg.type === "user" ? "bg-blue-50" : "bg-gray-50"
+                          className={`p-4 rounded-lg ${
+                            msg.type === "user"
+                              ? "bg-blue-50/50 border border-blue-100"
+                              : "bg-gray-50/50 border border-gray-100"
                           }`}
                         >
                           <div className="flex items-start gap-3">
-                            {msg.type === "user" ? (
-                              <User className="h-5 w-5 mt-0.5 text-blue-600 flex-shrink-0" />
-                            ) : (
-                              <Bot className="h-5 w-5 mt-0.5 text-gray-600 flex-shrink-0" />
-                            )}
+                            <div
+                              className={`p-1.5 rounded-full mt-0.5 ${
+                                msg.type === "user"
+                                  ? "bg-blue-100 text-blue-600"
+                                  : "bg-gray-100 text-gray-600"
+                              }`}
+                            >
+                              {msg.type === "user" ? (
+                                <User className="h-4 w-4" />
+                              ) : (
+                                <Bot className="h-4 w-4" />
+                              )}
+                            </div>
                             <div className="flex-1">
-                              <p className="text-gray-800 whitespace-pre-wrap">
+                              <p className="text-gray-800 whitespace-pre-wrap text-sm">
                                 {msg.content}
                               </p>
                             </div>
@@ -334,9 +376,11 @@ export function SessionSummaryTable() {
                         </div>
                       ))
                     ) : (
-                      <p className="text-center text-muted-foreground">
-                        No transcript available
-                      </p>
+                      <div className="flex justify-center items-center h-32 rounded-lg border border-dashed border-gray-200 bg-gray-50/50">
+                        <p className="text-sm text-gray-500">
+                          No transcript available
+                        </p>
+                      </div>
                     )}
                   </div>
                 )}
