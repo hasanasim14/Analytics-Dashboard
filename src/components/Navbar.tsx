@@ -2,8 +2,20 @@ import React from "react";
 import { Button } from "./ui/button";
 import { CircleUser, Headset, LogOut, Cpu } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 const Navbar = () => {
+  const router = useRouter();
+
+  const handleLogout = () => {
+    sessionStorage.removeItem("LoggedIn");
+    toast.success("Logged out successfully");
+    setTimeout(() => {
+      router.push("/login");
+    }, 1000);
+  };
+
   return (
     <div className="w-full h-13 sticky top-0 z-50 bg-[rgba(32,32,32,0.95)] backdrop-blur-sm">
       <div className="container mx-auto px-4 h-full">
@@ -41,6 +53,7 @@ const Navbar = () => {
                   variant="ghost"
                   size="sm"
                   className="justify-start gap-2 px-3 py-2 h-8 text-sm font-normal text-red-500 hover:bg-red-50/50 hover:text-red-600"
+                  onClick={handleLogout}
                 >
                   <LogOut className="h-3.5 w-3.5" />
                   <span>Logout</span>

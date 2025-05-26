@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,14 +12,17 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface FormData {
-  email: string;
+  username: string;
   password: string;
 }
 
 interface FormErrors {
-  email: string;
+  username: string;
   password: string;
 }
 
@@ -32,22 +33,22 @@ export function LoginForm({
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<FormData>({
-    email: "",
+    username: "",
     password: "",
   });
   const [errors, setErrors] = useState<FormErrors>({
-    email: "",
+    username: "",
     password: "",
   });
   const router = useRouter();
 
   // Check for existing auth token on mount
-  // useEffect(() => {
-  //   const token = sessionStorage.getItem("authToken");
-  //   if (token) {
-  //     router.push("/dashboard");
-  //   }
-  // }, [router]);
+  useEffect(() => {
+    const userStatus = sessionStorage.getItem("LoggedIn");
+    if (userStatus === "true") {
+      router.push("/dashboard");
+    }
+  }, [router]);
 
   // Handle input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,15 +56,10 @@ export function LoginForm({
     setFormData((prev) => ({ ...prev, [id]: value }));
 
     // Validate on change
-    if (id === "email") {
+    if (id === "username") {
       setErrors((prev) => ({
         ...prev,
-        email:
-          value.trim() === ""
-            ? "Email is required"
-            : // : !isValidEmail(value)
-              // ? "Invalid email format"
-              "",
+        email: value.trim() === "" ? "Username is required" : "",
       }));
     } else if (id === "password") {
       setErrors((prev) => ({
@@ -76,17 +72,12 @@ export function LoginForm({
   // Validate form before submission
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {
-      email:
-        formData.email.trim() === ""
-          ? "Email is required"
-          : // : !isValidEmail(formData.email)
-            // ? "Invalid email format"
-            "",
+      username: formData.username.trim() === "" ? "Username is required" : "",
       password: formData.password.trim() === "" ? "Password is required" : "",
     };
 
     setErrors(newErrors);
-    return !newErrors.email && !newErrors.password;
+    return !newErrors.username && !newErrors.password;
   };
 
   // Handle form submission
@@ -94,11 +85,6 @@ export function LoginForm({
     e?.preventDefault();
 
     if (!validateForm()) {
-      // toast({
-      //   title: "Validation Error",
-      //   description: "Please fix the errors in the form",
-      //   variant: "destructive",
-      // });
       return;
     }
 
@@ -111,7 +97,7 @@ export function LoginForm({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            user: formData.email,
+            user: formData.username,
             secret: formData.password,
           }),
         }
@@ -127,30 +113,18 @@ export function LoginForm({
 
       const responseData = await response.json();
 
-      // Store auth token and user data
-      const authToken = responseData?.data?.token;
-      if (authToken) {
-        sessionStorage.setItem("authToken", authToken);
-        sessionStorage.setItem(
-          "user",
-          JSON.stringify(responseData?.data?.token_payload || {})
-        );
-      }
+      const userStatus = responseData?.success;
+      sessionStorage.setItem("LoggedIn", userStatus);
+      toast.success("Login Successful");
 
-      // toast({
-      //   title: "Login Successful",
-      //   description: "Redirecting to dashboard...",
-      // });
-
-      router.push("/dashboard");
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 1000);
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Login failed";
-      // toast({
-      //   title: "Error",
-      //   description: errorMessage,
-      //   variant: "destructive",
-      // });
+
+      toast.error("Failed to Login, try again at a later time");
       console.error("Login error:", errorMessage);
     } finally {
       setIsLoading(false);
@@ -163,24 +137,24 @@ export function LoginForm({
         <CardHeader className="text-center">
           <CardTitle className="text-xl">Welcome back</CardTitle>
           <CardDescription>
-            Enter your email below to login to your account
+            Enter your credentials below to login to your account
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="username">Username</Label>
               <Input
-                id="email"
+                id="username"
                 type="text"
-                placeholder="m@example.com"
-                value={formData.email}
+                placeholder="admin"
+                value={formData.username}
                 onChange={handleChange}
-                className={errors.email ? "border-destructive" : ""}
+                className={errors.username ? "border-destructive" : ""}
                 disabled={isLoading}
               />
-              {errors.email && (
-                <p className="text-destructive text-sm">{errors.email}</p>
+              {errors.username && (
+                <p className="text-destructive text-sm">{errors.username}</p>
               )}
             </div>
 
@@ -213,7 +187,7 @@ export function LoginForm({
 
             <Button
               type="submit"
-              disabled={isLoading || !formData.email || !formData.password}
+              disabled={isLoading || !formData.username || !formData.password}
               className="w-full"
             >
               {isLoading ? (
