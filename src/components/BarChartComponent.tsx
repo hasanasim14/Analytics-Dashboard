@@ -27,11 +27,6 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-interface ChartConfigItem {
-  label: string;
-  color: string;
-}
-
 interface DailyCostItem {
   index: number;
   date: string;
@@ -45,16 +40,15 @@ interface ApiResponse {
 }
 
 export function BarChartComponent() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [activeChart, setActiveChart] =
     React.useState<keyof typeof chartConfig>("cost");
   const [dailyCostData, setDailyCostData] = React.useState<DailyCostItem[]>([]);
-  const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     const fetchBarChartData = async () => {
       try {
-        setLoading(true);
         setError(null);
 
         const response = await fetch(
@@ -80,8 +74,6 @@ export function BarChartComponent() {
           error instanceof Error ? error.message : "Failed to fetch data";
         setError(errorMessage);
         console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
       }
     };
 

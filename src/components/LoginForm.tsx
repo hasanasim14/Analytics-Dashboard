@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-// import { toast } from "@/components/ui/use-toast";
 
 interface FormData {
   email: string;
@@ -49,11 +48,6 @@ export function LoginForm({
   //     router.push("/dashboard");
   //   }
   // }, [router]);
-
-  // Email validation helper
-  const isValidEmail = useCallback((email: string): boolean => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  }, []);
 
   // Handle input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -157,6 +151,7 @@ export function LoginForm({
       //   description: errorMessage,
       //   variant: "destructive",
       // });
+      console.error("Login error:", errorMessage);
     } finally {
       setIsLoading(false);
     }

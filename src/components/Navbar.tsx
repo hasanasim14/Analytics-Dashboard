@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "./ui/button";
-import { CircleUser, CornerRightDown, Headset, LogOut } from "lucide-react";
+import { CircleUser, Headset, LogOut, Cpu } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 const Navbar = () => {
@@ -14,28 +14,36 @@ const Navbar = () => {
                 <CircleUser className="h-5 w-5" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-56 p-2" align="end" sideOffset={8}>
-              <div className="grid gap-1">
+            <PopoverContent
+              className="w-56 p-1 rounded-lg shadow-lg border bg-popover"
+              align="end"
+              sideOffset={8}
+            >
+              <div className="grid gap-0.5">
                 <Button
                   variant="ghost"
-                  className="justify-start gap-2 text-red-500 hover:bg-red-50 hover:text-red-500"
+                  size="sm"
+                  className="justify-start gap-2 px-3 py-2 h-8 text-sm font-normal hover:bg-accent"
                 >
-                  <LogOut className="h-4 w-4" />
-                  <span>Logout</span>
+                  <Cpu className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span>AI Systems</span>
                 </Button>
                 <Button
                   variant="ghost"
-                  className="justify-start gap-2 hover:bg-gray-100"
+                  size="sm"
+                  className="justify-start gap-2 px-3 py-2 h-8 text-sm font-normal hover:bg-accent"
                 >
-                  <Headset className="h-4 w-4" />
+                  <Headset className="h-3.5 w-3.5 text-muted-foreground" />
                   <span>Support</span>
                 </Button>
+                <div className="border-t my-1"></div>
                 <Button
                   variant="ghost"
-                  className="justify-start gap-2 hover:bg-gray-100"
+                  size="sm"
+                  className="justify-start gap-2 px-3 py-2 h-8 text-sm font-normal text-red-500 hover:bg-red-50/50 hover:text-red-600"
                 >
-                  <CornerRightDown className="h-4 w-4" />
-                  <span>AI Systems</span>
+                  <LogOut className="h-3.5 w-3.5" />
+                  <span>Logout</span>
                 </Button>
               </div>
             </PopoverContent>
