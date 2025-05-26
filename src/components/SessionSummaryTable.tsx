@@ -129,9 +129,9 @@ export function SessionSummaryTable() {
 
   return (
     <>
-      <Card className="border-none shadow-sm">
-        <CardHeader className="px-6 pt-6 pb-4">
-          <CardTitle className="text-xl font-semibold text-gray-800">
+      <Card className="border-none shadow-sm p-4">
+        <CardHeader className="text-center">
+          <CardTitle className="text-xl font-semibold font-mono uppercase tracking-widest text-gray-800">
             Session Summary
           </CardTitle>
         </CardHeader>

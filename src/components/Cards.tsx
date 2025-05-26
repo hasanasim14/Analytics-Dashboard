@@ -38,7 +38,7 @@ const Cards = () => {
             <div className="p-3 rounded-lg bg-orange-500/10">
               <DollarSign className="h-6 w-6 text-orange-500" />
             </div>
-            <CardTitle className="text-lg font-semibold text-gray-800">
+            <CardTitle className="text-lg font-mono font-semibold text-gray-800">
               Total Spent
             </CardTitle>
           </div>
@@ -56,7 +56,7 @@ const Cards = () => {
             <div className="p-3 rounded-lg bg-orange-500/10">
               <Activity className="h-6 w-6 text-orange-500" />
             </div>
-            <CardTitle className="text-lg font-semibold text-gray-800">
+            <CardTitle className="text-lg font-mono font-semibold text-gray-800">
               Sessions
             </CardTitle>
           </div>
@@ -74,7 +74,7 @@ const Cards = () => {
             <div className="p-3 rounded-lg bg-orange-500/10">
               <Calculator className="h-6 w-6 text-orange-500" />
             </div>
-            <CardTitle className="text-lg font-semibold text-gray-800">
+            <CardTitle className="text-lg font-mono font-semibold text-gray-800">
               Avg Cost/Session
             </CardTitle>
           </div>
@@ -92,7 +92,7 @@ const Cards = () => {
             <div className="p-3 rounded-lg bg-orange-500/10">
               <BarChart className="h-6 w-6 text-orange-500" />
             </div>
-            <CardTitle className="text-lg font-semibold text-gray-800">
+            <CardTitle className="text-lg font-mono font-semibold text-gray-800">
               Avg Sessions/Day
             </CardTitle>
           </div>

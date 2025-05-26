@@ -101,8 +101,10 @@ export function PieChartComponent() {
   return (
     <Card className="flex flex-col border-0 shadow-sm h-full">
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-semibold">Budget Overview</CardTitle>
-        <CardDescription className="text-sm text-muted-foreground">
+        <CardTitle className="text-lg font-semibold font-mono uppercase tracking-widest text-center">
+          Budget Overview
+        </CardTitle>
+        <CardDescription className="text-sm text-muted-foreground font-mono text-center">
           PKR {budgetData?.TotalSpend?.toLocaleString() || 0} of{" "}
           {totalBudget.toLocaleString()} used
         </CardDescription>
@@ -160,7 +162,7 @@ export function PieChartComponent() {
                   backgroundColor: COLORS[entry.name as keyof typeof COLORS],
                 }}
               />
-              <span className="text-sm font-medium">
+              <span className="text-sm font-medium font-mono">
                 {chartConfig[entry.name as keyof typeof COLORS].label}:{" "}
                 {entry.percentage.toFixed(1)}%
               </span>

@@ -50,7 +50,6 @@ export function BarChartComponent() {
     const fetchBarChartData = async () => {
       try {
         setError(null);
-
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_BASE_URL}/DailyCost`,
           {
@@ -80,16 +79,12 @@ export function BarChartComponent() {
     fetchBarChartData();
   }, []);
 
-  // Calculate bar size based on data length
   const calculateBarSize = () => {
-    if (!dailyCostData.length) return 30; // default size
-
-    // Adjust bar width based on number of data points
+    if (!dailyCostData.length) return 30;
     const baseWidth = 30;
     const maxWidth = 50;
     const minWidth = 15;
 
-    // Calculate width based on number of items (more items = smaller bars)
     const calculatedWidth = Math.max(
       minWidth,
       Math.min(maxWidth, baseWidth - dailyCostData.length * 0.5)
@@ -102,7 +97,9 @@ export function BarChartComponent() {
     return (
       <Card className="w-full">
         <CardHeader className="border-b p-0">
-          <CardTitle className="font-medium">Total Cost by Day</CardTitle>
+          <CardTitle className="font-bold font-mono uppercase text-lg text-gray-800 tracking-widest">
+            Total Cost by Day
+          </CardTitle>
         </CardHeader>
         <CardContent className="p-6 text-destructive">
           Error: {error}
@@ -114,7 +111,9 @@ export function BarChartComponent() {
   return (
     <Card className="w-full">
       <CardHeader className="flex flex-col items-stretch space-y-0 border-b p-0 sm:flex-row justify-center">
-        <CardTitle className="font-medium">Total Cost by Day</CardTitle>
+        <CardTitle className="font-bold font-mono uppercase text-lg text-gray-800 tracking-widest">
+          Total Cost by Day
+        </CardTitle>
       </CardHeader>
       <CardContent className="px-2 sm:p-6">
         <ChartContainer
