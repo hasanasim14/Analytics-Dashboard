@@ -148,7 +148,7 @@ export function SessionSummaryTable() {
               <div className="rounded-lg border border-gray-200 overflow-hidden">
                 <Table className="min-w-[1000px]">
                   <TableHeader>
-                    <TableRow className="bg-[#e05d44] text-white hover:bg-[#e05c44] transition-colors">
+                    <TableRow className="bg-[#e05d44] text-white hover:bg-[#e05c44] font-mono transition-colors">
                       <TableHead className="font-medium text-white">
                         Session ID
                       </TableHead>

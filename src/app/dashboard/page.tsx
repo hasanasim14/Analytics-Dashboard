@@ -5,13 +5,23 @@ import { BarChartComponent } from "@/components/BarChartComponent";
 import { SessionSummaryTable } from "@/components/SessionSummaryTable";
 import Navbar from "@/components/Navbar";
 import Cards from "@/components/Cards";
+import DualMonthYearPicker from "@/components/MonthRangePicker";
 
 export default function Dashboard() {
   return (
     <>
       <Navbar />
-      <div className="container mx-auto p-4 space-y-4">
-        {/* Key Metrics */}
+
+      {/* Header Section */}
+      <div className="container mx-auto p-4 space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold tracking-tight font-mono text-white">
+            Analytics Dashboard
+          </h1>
+          <DualMonthYearPicker />
+        </div>
+
+        {/* Cards Section */}
         <Cards />
 
         {/* Charts Section */}
