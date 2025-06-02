@@ -43,6 +43,7 @@ interface Session {
 interface TranscriptMessage {
   type: string;
   content: string;
+  ts: string;
 }
 
 interface ApiResponse {
@@ -368,6 +369,15 @@ export function SessionSummaryTable() {
                               )}
                             </div>
                             <div className="flex-1">
+                              <div className="flex justify-between items-baseline mb-1">
+                                {/* <span className="text-xs font-medium text-gray-500">
+                                  {msg.type === "user" ? "You" : "Assistant"}
+                                </span> */}
+                                <span className="text-xs text-gray-400">
+                                  {new Date(msg.ts).toLocaleString()}{" "}
+                                  {/* Display formatted timestamp */}
+                                </span>
+                              </div>
                               <p className="text-gray-800 whitespace-pre-wrap text-sm">
                                 {msg.content}
                               </p>

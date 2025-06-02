@@ -6,6 +6,7 @@ import { SessionSummaryTable } from "@/components/SessionSummaryTable";
 import Navbar from "@/components/Navbar";
 import Cards from "@/components/Cards";
 import DualMonthYearPicker from "@/components/MonthRangePicker";
+import { SetupDialog } from "@/components/SetupDialog";
 
 export default function Dashboard() {
   return (
@@ -18,6 +19,7 @@ export default function Dashboard() {
           <h1 className="text-3xl font-bold tracking-tight font-mono text-white">
             Analytics Dashboard
           </h1>
+          <SetupDialog />
           <DualMonthYearPicker />
         </div>
 
