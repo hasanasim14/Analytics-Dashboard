@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "./ui/button";
-import { CircleUser, Headset, LogOut, Cpu, Brain } from "lucide-react";
+import { CircleUser, Headset, LogOut, Cpu } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -20,8 +20,9 @@ const Navbar = () => {
     <header className="sticky top-0 z-50 bg-[#212121] border-b border-gray-900 shadow-md">
       <div className="container mx-auto flex items-center justify-between px-6 py-4">
         <div className="flex items-center gap-3 cursor-pointer transition-transform hover:scale-105">
-          <Brain className="text-white w-6 h-6" />
-          <h1 className="text-white text-2xl font-bold tracking-wide">Aiva</h1>
+          <h1 className="text-white text-2xl font-bold tracking-wide font-mono">
+            Aiva
+          </h1>
         </div>
         <Popover>
           <PopoverTrigger asChild>
