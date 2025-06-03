@@ -132,33 +132,40 @@ export default function DualMonthYearPicker({
     )}`;
   };
 
+  console.log("start month", startMonth);
+  console.log("start year", startYear);
+  console.log("end month", endMonth);
+  console.log("end Year", endYear);
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          className={cn(
-            "w-[280px] justify-start text-left font-normal",
-            !dateRange.from && "text-muted-foreground",
-            className
-          )}
-        >
-          <CalendarIcon className="mr-2 h-4 w-4" />
-          {getButtonText()}
+        <div className="relative w-[280px]">
+          <Button
+            variant="outline"
+            className={cn(
+              "w-full justify-start text-left font-normal pr-7", // leave room for clear button
+              !dateRange.from && "text-muted-foreground",
+              className
+            )}
+          >
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            {getButtonText()}
+          </Button>
+
           {dateRange.from && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="ml-auto h-4 w-4 p-0 hover:bg-transparent"
+            <button
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 clearSelection();
               }}
+              className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 p-0 text-muted-foreground hover:text-foreground"
             >
               <X className="h-3 w-3" />
-            </Button>
+            </button>
           )}
-        </Button>
+        </div>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
         <div className="flex">
