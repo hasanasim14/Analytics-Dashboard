@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Analytics Dashboard",
+  title: "Aiva - Analytics Dashboard",
   description: " ",
 };
 
