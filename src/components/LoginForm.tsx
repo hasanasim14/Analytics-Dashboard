@@ -115,6 +115,7 @@ export function LoginForm({
 
       const userStatus = responseData?.success;
       sessionStorage.setItem("LoggedIn", userStatus);
+      sessionStorage.setItem("Key", responseData?.data?.token);
       toast.success("Login Successful");
 
       setTimeout(() => {
