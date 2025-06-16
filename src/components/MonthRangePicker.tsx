@@ -140,11 +140,11 @@ export default function DualMonthYearPicker({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <div className="relative w-[280px]">
+        <div className="relative w-[calc(25%-1rem)]">
           <Button
             variant="outline"
             className={cn(
-              "w-full justify-start text-left font-normal pr-7", // leave room for clear button
+              "w-full justify-start text-left font-normal",
               !dateRange.from && "text-muted-foreground",
               className
             )}

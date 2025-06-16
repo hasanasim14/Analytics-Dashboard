@@ -13,6 +13,7 @@ import {
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { toast } from "sonner";
+import { Checkbox } from "./ui/checkbox";
 
 export const SetupDialog = () => {
   const [maxCost, setMaxCost] = useState("0.00");
@@ -20,10 +21,12 @@ export const SetupDialog = () => {
   const [apiKey, setApiKey] = useState("");
   const [loading, setLoading] = useState(false);
   const [setupPageDialog, setSetupPageDialog] = useState(false);
-  // const [error, setError] = useState<string | null>(null);
-  // const [setupData, setSetupData] = useState<any>(null);
   const [originalMaxCost, setOriginalMaxCost] = useState("0.00");
   const [originalMaxMessages, setOriginalMaxMessages] = useState("0");
+
+  // Add state for checkboxes
+  const [enableMaxCost, setEnableMaxCost] = useState(true);
+  const [enableMaxMessages, setEnableMaxMessages] = useState(true);
 
   useEffect(() => {
     const key = sessionStorage.getItem("Key");
@@ -43,17 +46,25 @@ export const SetupDialog = () => {
 
   const handleSave = async () => {
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/setups`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/setups`, {
         method: "POST",
         headers: {
           Authorization: apiKey,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ maxChat: maxCost, maxVal: maxMessages }),
+        body: JSON.stringify({
+          maxChat: enableMaxMessages ? maxMessages : "None",
+          maxVal: enableMaxCost ? maxCost : "None",
+        }),
       });
+      if (res.ok) {
+        toast.success("Values Saved Successfully!");
+        setSetupPageDialog(false);
+      }
 
-      toast.success("Values Saved Successfully!");
-      setSetupPageDialog(false);
+      if (!res.ok) {
+        toast.error("Failed to save values");
+      }
     } catch (error) {
       console.error("The error is ", error);
       toast.error("Failed to save values");
@@ -67,8 +78,6 @@ export const SetupDialog = () => {
       }
 
       setLoading(true);
-      // setError(null);
-
       try {
         const response = await fetch("https://smartview.ai-iscp.com/setups", {
           method: "GET",
@@ -90,29 +99,30 @@ export const SetupDialog = () => {
         const fetchedMaxCost = data?.data?.maxVal || "0.00";
         const fetchedMaxMessages = data?.data?.maxChat || "0";
 
-        setMaxCost(fetchedMaxCost);
-        setMaxMessages(fetchedMaxMessages);
-        setOriginalMaxCost(fetchedMaxCost);
-        setOriginalMaxMessages(fetchedMaxMessages);
-        // setSetupData(data);
+        // Check if values are "None" and set checkbox states accordingly
+        setEnableMaxCost(fetchedMaxCost !== "None");
+        setEnableMaxMessages(fetchedMaxMessages !== "None");
 
-        // If the API returns setup data, populate the form
-        if (data.maxCost !== undefined) {
-          setMaxCost(data.maxCost.toString());
-        }
-        if (data.maxMessages !== undefined) {
-          setMaxMessages(data.maxMessages.toString());
-        }
+        // Set the input values, but only if they're not "None"
+        setMaxCost(fetchedMaxCost !== "None" ? fetchedMaxCost : "0.00");
+        setMaxMessages(
+          fetchedMaxMessages !== "None" ? fetchedMaxMessages : "0"
+        );
+
+        setOriginalMaxCost(fetchedMaxCost !== "None" ? fetchedMaxCost : "0.00");
+        setOriginalMaxMessages(
+          fetchedMaxMessages !== "None" ? fetchedMaxMessages : "0"
+        );
+
+        setLoading(false);
       } catch (error) {
         console.error("Fetch error:", error);
-        // setError(error instanceof Error ? error.message : "An error occurred");
-      } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [apiKey]); // Add apiKey as dependency
+  }, [apiKey]);
 
   const handleCancel = () => {
     setSetupPageDialog(false);
@@ -139,7 +149,7 @@ export const SetupDialog = () => {
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div>
             <Label htmlFor="api-key" className="font-mono mb-2">
               API Key:
@@ -154,40 +164,78 @@ export const SetupDialog = () => {
             />
           </div>
 
-          <div>
-            <Label htmlFor="max-cost" className="font-mono mb-2">
-              Maximum Chat Cost:
-            </Label>
-            <Input
-              id="max-cost"
-              type="number"
-              step="0.01"
-              placeholder="e.g. 5.00"
-              value={maxCost}
-              onChange={(e) => setMaxCost(e.target.value)}
-            />
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="enable-max-cost"
+                checked={enableMaxCost}
+                onCheckedChange={(checked) =>
+                  setEnableMaxCost(checked === true)
+                }
+              />
+              <Label htmlFor="enable-max-cost" className="font-mono">
+                Enable Maximum Chat Cost
+              </Label>
+            </div>
+
+            <div className="ml-6">
+              <Label htmlFor="max-cost" className="font-mono mb-2 block">
+                Maximum Chat Cost:
+              </Label>
+              <Input
+                id="max-cost"
+                type="number"
+                step="0.01"
+                placeholder="e.g. 5.00"
+                value={maxCost}
+                onChange={(e) => setMaxCost(e.target.value)}
+                disabled={!enableMaxCost}
+                className={
+                  !enableMaxCost ? "opacity-50 cursor-not-allowed" : ""
+                }
+              />
+            </div>
           </div>
 
-          <div>
-            <Label htmlFor="max-messages" className="font-mono mb-2">
-              Maximum Messages:
-            </Label>
-            <Input
-              id="max-messages"
-              type="number"
-              step="1"
-              placeholder="e.g. 100"
-              value={maxMessages}
-              onChange={(e) => setMaxMessages(e.target.value)}
-            />
+          <hr className="border-gray-200" />
+
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="enable-max-messages"
+                checked={enableMaxMessages}
+                onCheckedChange={(checked) =>
+                  setEnableMaxMessages(checked === true)
+                }
+              />
+              <Label htmlFor="enable-max-messages" className="font-mono">
+                Enable Maximum Messages
+              </Label>
+            </div>
+
+            <div className="ml-6">
+              <Label htmlFor="max-messages" className="font-mono mb-2 block">
+                Maximum Messages:
+              </Label>
+              <Input
+                id="max-messages"
+                type="number"
+                step="1"
+                placeholder="e.g. 100"
+                value={maxMessages}
+                onChange={(e) => setMaxMessages(e.target.value)}
+                disabled={!enableMaxMessages}
+                className={
+                  !enableMaxMessages ? "opacity-50 cursor-not-allowed" : ""
+                }
+              />
+            </div>
           </div>
 
-          <div className="flex justify-end gap-2 w-full">
-            {/* <DialogClose> */}
+          <div className="flex justify-end gap-2 w-full pt-2">
             <Button variant="outline" onClick={handleCancel}>
               Cancel
             </Button>
-            {/* </DialogClose> */}
             <Button onClick={handleSave} disabled={loading}>
               Save
             </Button>
