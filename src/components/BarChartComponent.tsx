@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { useEffect, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -15,6 +15,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { DailyCostItem, DateRange } from "@/lib/types";
 
 const chartConfig = {
   views: {
@@ -27,35 +28,38 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-interface DailyCostItem {
-  index: number;
-  date: string;
-  cost: number;
-}
-
 interface ApiResponse {
   data: DailyCostItem[];
   success: boolean;
   message: string;
 }
 
-export function BarChartComponent() {
+export function BarChartComponent({ startDate, endDate }: DateRange) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [activeChart, setActiveChart] =
-    React.useState<keyof typeof chartConfig>("cost");
-  const [dailyCostData, setDailyCostData] = React.useState<DailyCostItem[]>([]);
-  const [error, setError] = React.useState<string | null>(null);
+    useState<keyof typeof chartConfig>("cost");
+  const [dailyCostData, setDailyCostData] = useState<DailyCostItem[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchBarChartData = async () => {
+      const currentDate = new Date();
+      const currentMonth = `${String(currentDate.getMonth() + 1).padStart(
+        2,
+        "0"
+      )}-${currentDate.getFullYear()}`;
+
+      const startPeriod = startDate || currentMonth;
+      const endPeriod = endDate || currentMonth;
+
       try {
         setError(null);
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/DailyCost`,
-          {
-            method: "GET",
-          }
-        );
+
+        const url = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/DailyCost`);
+        url.searchParams.append("startPeriod", startPeriod);
+        url.searchParams.append("endPeriod", endPeriod);
+
+        const response = await fetch(url.toString());
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -77,7 +81,7 @@ export function BarChartComponent() {
     };
 
     fetchBarChartData();
-  }, []);
+  }, [startDate, endDate]);
 
   const calculateBarSize = () => {
     if (!dailyCostData.length) return 30;
@@ -97,12 +101,12 @@ export function BarChartComponent() {
     return (
       <Card className="w-full">
         <CardHeader className="border-b p-0">
-          <CardTitle className="font-bold font-mono uppercase text-lg text-gray-800 tracking-widest">
+          <CardTitle className="font-bold font-mono uppercase text-lg text-gray-800 tracking-widest text-center">
             Total Cost by Day
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-6 text-destructive">
-          Error: {error}
+        <CardContent className="p-6 text-center font-bold text-2xl">
+          Loading...
         </CardContent>
       </Card>
     );

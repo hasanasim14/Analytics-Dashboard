@@ -1,26 +1,31 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Activity, BarChart, Calculator, DollarSign } from "lucide-react";
+import { CardsData, DateRange } from "@/lib/types";
 
-interface CardsData {
-  totalCost: string;
-  Sessions: number;
-  "Average Cost": string;
-  AverageSession: number;
-}
-
-const Cards = () => {
+const Cards = ({ startDate, endDate }: DateRange) => {
   const [cardsData, setCardsData] = useState<CardsData | null>(null);
 
   useEffect(() => {
     const fetchCardsData = async () => {
+      // calculating the current month and year
+      const currentDate = new Date();
+      const currentMonth = `${String(currentDate.getMonth() + 1).padStart(
+        2,
+        "0"
+      )}-${currentDate.getFullYear()}`;
+
+      const startPeriod = startDate || currentMonth;
+      const endPeriod = endDate || currentMonth;
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/Cards`,
-          {
-            method: "GET",
-          }
-        );
+        const url = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/Cards`);
+        url.searchParams.append("startPeriod", startPeriod);
+        url.searchParams.append("endPeriod", endPeriod);
+
+        const response = await fetch(url.toString(), {
+          method: "GET",
+        });
+
         const data = await response.json();
         setCardsData(data?.data);
       } catch (error) {
@@ -28,7 +33,7 @@ const Cards = () => {
       }
     };
     fetchCardsData();
-  }, []);
+  }, [startDate, endDate]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

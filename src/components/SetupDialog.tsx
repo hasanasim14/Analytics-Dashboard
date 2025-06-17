@@ -17,7 +17,7 @@ import { Checkbox } from "./ui/checkbox";
 
 export const SetupDialog = () => {
   const [maxCost, setMaxCost] = useState("0.00");
-  const [maxMessages, setMaxMessages] = useState("0");
+  const [maxMessages, setMaxMessages] = useState("0.00");
   const [apiKey, setApiKey] = useState("");
   const [loading, setLoading] = useState(false);
   const [setupPageDialog, setSetupPageDialog] = useState(false);
@@ -25,8 +25,8 @@ export const SetupDialog = () => {
   const [originalMaxMessages, setOriginalMaxMessages] = useState("0");
 
   // Add state for checkboxes
-  const [enableMaxCost, setEnableMaxCost] = useState(true);
-  const [enableMaxMessages, setEnableMaxMessages] = useState(true);
+  const [enableMaxCost, setEnableMaxCost] = useState(false);
+  const [enableMaxMessages, setEnableMaxMessages] = useState(false);
 
   useEffect(() => {
     const key = sessionStorage.getItem("Key");
@@ -46,6 +46,7 @@ export const SetupDialog = () => {
 
   const handleSave = async () => {
     try {
+      setLoading(true);
       const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/setups`, {
         method: "POST",
         headers: {
@@ -53,21 +54,24 @@ export const SetupDialog = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          maxChat: enableMaxMessages ? maxMessages : "None",
-          maxVal: enableMaxCost ? maxCost : "None",
+          maxChat: enableMaxMessages ? maxMessages : "0",
+          maxVal: enableMaxCost ? maxCost : "0.00",
         }),
       });
       if (res.ok) {
         toast.success("Values Saved Successfully!");
         setSetupPageDialog(false);
-      }
-
-      if (!res.ok) {
+        // Update original values after successful save
+        setOriginalMaxCost(enableMaxCost ? maxCost : "0.00");
+        setOriginalMaxMessages(enableMaxMessages ? maxMessages : "0");
+      } else {
         toast.error("Failed to save values");
       }
     } catch (error) {
       console.error("The error is ", error);
       toast.error("Failed to save values");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -99,24 +103,27 @@ export const SetupDialog = () => {
         const fetchedMaxCost = data?.data?.maxVal || "0.00";
         const fetchedMaxMessages = data?.data?.maxChat || "0";
 
-        // Check if values are "None" and set checkbox states accordingly
-        setEnableMaxCost(fetchedMaxCost !== "None");
-        setEnableMaxMessages(fetchedMaxMessages !== "None");
+        // Determine if values are enabled (not zero)
+        const costEnabled =
+          fetchedMaxCost !== "0.00" &&
+          fetchedMaxCost !== "0" &&
+          fetchedMaxCost !== "None";
+        const messagesEnabled =
+          fetchedMaxMessages !== "0" && fetchedMaxMessages !== "None";
 
-        // Set the input values, but only if they're not "None"
-        setMaxCost(fetchedMaxCost !== "None" ? fetchedMaxCost : "0.00");
-        setMaxMessages(
-          fetchedMaxMessages !== "None" ? fetchedMaxMessages : "0"
-        );
+        setEnableMaxCost(costEnabled);
+        setEnableMaxMessages(messagesEnabled);
 
-        setOriginalMaxCost(fetchedMaxCost !== "None" ? fetchedMaxCost : "0.00");
-        setOriginalMaxMessages(
-          fetchedMaxMessages !== "None" ? fetchedMaxMessages : "0"
-        );
+        // Set the input values
+        setMaxCost(costEnabled ? fetchedMaxCost : "0.00");
+        setMaxMessages(messagesEnabled ? fetchedMaxMessages : "0");
 
-        setLoading(false);
+        // Save original values
+        setOriginalMaxCost(costEnabled ? fetchedMaxCost : "0.00");
+        setOriginalMaxMessages(messagesEnabled ? fetchedMaxMessages : "0");
       } catch (error) {
         console.error("Fetch error:", error);
+      } finally {
         setLoading(false);
       }
     };
@@ -126,9 +133,11 @@ export const SetupDialog = () => {
 
   const handleCancel = () => {
     setSetupPageDialog(false);
-    // Restore original values instead of resetting to zero
+    // Restore original values
     setMaxCost(originalMaxCost);
     setMaxMessages(originalMaxMessages);
+    setEnableMaxCost(originalMaxCost !== "0.00");
+    setEnableMaxMessages(originalMaxMessages !== "0");
   };
 
   return (
@@ -164,14 +173,24 @@ export const SetupDialog = () => {
             />
           </div>
 
+          <div>
+            <Label htmlFor="monthly-budget" className="font-mono mb-2">
+              Monthly Budget
+            </Label>
+            <Input id="monthly budget" type="number" className="font-mono" />
+          </div>
+
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="enable-max-cost"
                 checked={enableMaxCost}
-                onCheckedChange={(checked) =>
-                  setEnableMaxCost(checked === true)
-                }
+                onCheckedChange={(checked) => {
+                  setEnableMaxCost(checked === true);
+                  if (!checked) {
+                    setMaxCost("0.00");
+                  }
+                }}
               />
               <Label htmlFor="enable-max-cost" className="font-mono">
                 Enable Maximum Chat Cost
@@ -204,9 +223,12 @@ export const SetupDialog = () => {
               <Checkbox
                 id="enable-max-messages"
                 checked={enableMaxMessages}
-                onCheckedChange={(checked) =>
-                  setEnableMaxMessages(checked === true)
-                }
+                onCheckedChange={(checked) => {
+                  setEnableMaxMessages(checked === true);
+                  if (!checked) {
+                    setMaxMessages("0");
+                  }
+                }}
               />
               <Label htmlFor="enable-max-messages" className="font-mono">
                 Enable Maximum Messages
@@ -237,7 +259,7 @@ export const SetupDialog = () => {
               Cancel
             </Button>
             <Button onClick={handleSave} disabled={loading}>
-              Save
+              {loading ? "Saving..." : "Save"}
             </Button>
           </div>
         </div>

@@ -29,7 +29,7 @@ import {
   TableRow,
 } from "./ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
-// import { format } from "date-fns";
+import { DateRange } from "@/lib/types";
 
 interface Session {
   sessionID: string;
@@ -64,7 +64,7 @@ interface TranscriptResponse {
   message: string;
 }
 
-export function SessionSummaryTable() {
+export function SessionSummaryTable({ startDate, endDate }: DateRange) {
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -99,13 +99,22 @@ export function SessionSummaryTable() {
 
   useEffect(() => {
     const fetchSessionData = async () => {
+      //Checking the props for current if not found setting it as the current month and year
+      const currentDate = new Date();
+      const currentMonth = `${String(currentDate.getMonth() + 1).padStart(
+        2,
+        "0"
+      )}-${currentDate.getFullYear()}`;
+
+      const startPeriod = startDate || currentMonth;
+      const endPeriod = endDate || currentMonth;
+
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/Sessions`,
-          {
-            method: "GET",
-          }
-        );
+        const url = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/Sessions`);
+        url.searchParams.append("startPeriod", startPeriod);
+        url.searchParams.append("endPeriod", endPeriod);
+
+        const response = await fetch(url.toString());
 
         const responseData: ApiResponse = await response.json();
         setSessionData(responseData.data.Records);
@@ -117,7 +126,7 @@ export function SessionSummaryTable() {
       }
     };
     fetchSessionData();
-  }, []);
+  }, [startDate, endDate]);
 
   // Calculate pagination values
   const totalPages = Math.ceil(totalRecords / parseInt(pageSize));
@@ -188,13 +197,10 @@ export function SessionSummaryTable() {
                           {session.Total_Messages}
                         </TableCell>
                         <TableCell className="text-gray-700">
-                          {/* {format(new Date(session.Session_Start), "PPpp")} */}
                           {session.Session_Start}
                         </TableCell>
                         <TableCell className="text-gray-700">
-                          {/* {format(new Date( */}
                           {session.Session_End}
-                          {/* // ), "PPpp")} */}
                         </TableCell>
                         <TableCell className="text-gray-700">
                           {session.Duration_Mins.toFixed(1)} min
@@ -370,12 +376,8 @@ export function SessionSummaryTable() {
                             </div>
                             <div className="flex-1">
                               <div className="flex justify-between items-baseline mb-1">
-                                {/* <span className="text-xs font-medium text-gray-500">
-                                  {msg.type === "user" ? "You" : "Assistant"}
-                                </span> */}
                                 <span className="text-xs text-gray-400">
                                   {new Date(msg.ts).toLocaleString()}{" "}
-                                  {/* Display formatted timestamp */}
                                 </span>
                               </div>
                               <p className="text-gray-800 whitespace-pre-wrap text-sm">

@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { CalendarIcon, ChevronLeft, ChevronRight, X } from "lucide-react";
-import { format } from "date-fns";
+import { DualMonthYearPickerProps } from "@/lib/types";
 
 const months = [
   "January",
@@ -26,116 +26,191 @@ const months = [
   "December",
 ];
 
-// const currentYear = new Date().getFullYear();
-// const years = Array.from({ length: 21 }, (_, i) => currentYear - 10 + i);
-
-interface DateRange {
-  from: Date | undefined;
-  to: Date | undefined;
-}
-
-interface DualMonthYearPickerProps {
-  value?: DateRange;
-  onChange?: (range: DateRange) => void;
-  placeholder?: string;
-  className?: string;
-}
-
 export default function DualMonthYearPicker({
-  value,
-  onChange,
-  placeholder = "Pick A Date Range",
+  startDate,
+  endDate,
+  onStartDateChange,
+  onEndDateChange,
+  placeholder = "Pick Dates",
   className,
 }: DualMonthYearPickerProps) {
-  const [dateRange, setDateRange] = React.useState<DateRange>(
-    value || { from: undefined, to: undefined }
+  const [open, setOpen] = useState(false);
+
+  // Internal state for the selected dates
+  const [internalStartDate, setInternalStartDate] = useState<
+    string | undefined
+  >(startDate);
+  const [internalEndDate, setInternalEndDate] = useState<string | undefined>(
+    endDate
   );
-  const [open, setOpen] = React.useState(false);
 
-  // Start month picker state
-  const [startMonth, setStartMonth] = React.useState(new Date().getMonth());
-  const [startYear, setStartYear] = React.useState(new Date().getFullYear());
-
-  // End month picker state
-  const [endMonth, setEndMonth] = React.useState(new Date().getMonth());
-  const [endYear, setEndYear] = React.useState(new Date().getFullYear());
-
-  // Update internal state when value prop changes
-  React.useEffect(() => {
-    if (value) {
-      setDateRange(value);
-      if (value.from) {
-        setStartMonth(value.from.getMonth());
-        setStartYear(value.from.getFullYear());
-      }
-      if (value.to) {
-        setEndMonth(value.to.getMonth());
-        setEndYear(value.to.getFullYear());
-      }
-    }
-  }, [value]);
-
-  const updateDateRange = (newRange: DateRange) => {
-    setDateRange(newRange);
-    onChange?.(newRange);
+  // Parse the initial dates or use current month/year as default
+  const getDefaultMonthYear = () => {
+    const now = new Date();
+    return {
+      month: now.getMonth(),
+      year: now.getFullYear(),
+    };
   };
 
-  const handleStartMonthSelect = (monthIndex: number) => {
-    setStartMonth(monthIndex);
-    const newDate = new Date(startYear, monthIndex, 1);
-    const newRange = { from: newDate, to: dateRange.to };
+  // Parse date string "MM-YYYY"
+  const parseDateString = (dateStr?: string) => {
+    if (!dateStr) return getDefaultMonthYear();
+    const [month, year] = dateStr.split("-").map(Number);
+    return {
+      month: month - 1,
+      year: year,
+    };
+  };
 
-    // If end date exists and is before start date, clear it
-    if (dateRange.to && newDate > dateRange.to) {
-      newRange.to = undefined;
+  // Format month and year into "MM-YYYY" string
+  const formatDateString = (month: number, year: number) => {
+    return `${String(month + 1).padStart(2, "0")}-${year}`;
+  };
+
+  // Start month picker state
+  const [startMonth, setStartMonth] = useState(
+    parseDateString(startDate).month
+  );
+  const [startYear, setStartYear] = useState(parseDateString(startDate).year);
+
+  // End month picker state
+  const [endMonth, setEndMonth] = useState(parseDateString(endDate).month);
+  const [endYear, setEndYear] = useState(parseDateString(endDate).year);
+
+  useEffect(() => {
+    setInternalStartDate(startDate);
+    setInternalEndDate(endDate);
+
+    if (startDate) {
+      const parsed = parseDateString(startDate);
+      setStartMonth(parsed.month);
+      setStartYear(parsed.year);
     }
+    if (endDate) {
+      const parsed = parseDateString(endDate);
+      setEndMonth(parsed.month);
+      setEndYear(parsed.year);
+    }
+  }, [startDate, endDate]);
 
-    updateDateRange(newRange);
+  const handleStartMonthSelect = (monthIndex: number) => {
+    const newDateStr = formatDateString(monthIndex, startYear);
+    setStartMonth(monthIndex);
+    setInternalStartDate(newDateStr);
+
+    // If end date exists and is before new start date, clear it
+    if (internalEndDate) {
+      const [endMonth, endYear] = internalEndDate.split("-").map(Number);
+      const newMonth = monthIndex + 1;
+      const newYear = startYear;
+
+      if (newYear > endYear || (newYear === endYear && newMonth > endMonth)) {
+        setInternalEndDate(undefined);
+        setEndMonth(monthIndex);
+        setEndYear(startYear);
+      }
+    }
   };
 
   const handleEndMonthSelect = (monthIndex: number) => {
-    if (!dateRange.from) return;
+    const newDateStr = formatDateString(monthIndex, endYear);
 
-    setEndMonth(monthIndex);
-    const newDate = new Date(endYear, monthIndex, 1);
+    // Only set if start date exists and new date is after start
+    if (!internalStartDate) return;
 
-    // Only set if it's after start date
-    if (newDate >= dateRange.from) {
-      updateDateRange({ ...dateRange, to: newDate });
+    const [startMonth, startYear] = internalStartDate.split("-").map(Number);
+    const newMonth = monthIndex + 1;
+    const newYear = endYear;
+
+    if (
+      newYear > startYear ||
+      (newYear === startYear && newMonth >= startMonth)
+    ) {
+      setEndMonth(monthIndex);
+      setInternalEndDate(newDateStr);
     }
   };
 
   const navigateStartYear = (direction: "prev" | "next") => {
-    setStartYear(direction === "prev" ? startYear - 1 : startYear + 1);
+    const newYear = direction === "prev" ? startYear - 1 : startYear + 1;
+    setStartYear(newYear);
+
+    if (internalStartDate) {
+      const newDateStr = formatDateString(startMonth, newYear);
+      setInternalStartDate(newDateStr);
+
+      if (internalEndDate) {
+        const [endMonth, endYear] = internalEndDate.split("-").map(Number);
+        const startMonthNum = startMonth + 1;
+
+        if (
+          newYear > endYear ||
+          (newYear === endYear && startMonthNum > endMonth)
+        ) {
+          setInternalEndDate(undefined);
+        }
+      }
+    }
   };
 
   const navigateEndYear = (direction: "prev" | "next") => {
-    setEndYear(direction === "prev" ? endYear - 1 : endYear + 1);
+    const newYear = direction === "prev" ? endYear - 1 : endYear + 1;
+    setEndYear(newYear);
+
+    if (internalEndDate && internalStartDate) {
+      const [startMonth, startYear] = internalStartDate.split("-").map(Number);
+      const newMonth = endMonth + 1;
+
+      if (
+        newYear > startYear ||
+        (newYear === startYear && newMonth >= startMonth)
+      ) {
+        setInternalEndDate(formatDateString(endMonth, newYear));
+      }
+    }
   };
 
   const clearSelection = () => {
-    updateDateRange({ from: undefined, to: undefined });
+    setInternalStartDate(undefined);
+    setInternalEndDate(undefined);
+    const now = new Date();
+    setStartMonth(now.getMonth());
+    setStartYear(now.getFullYear());
+    setEndMonth(now.getMonth());
+    setEndYear(now.getFullYear());
+  };
+
+  const handleApply = () => {
+    onStartDateChange?.(internalStartDate);
+    onEndDateChange?.(internalEndDate);
+    setOpen(false);
   };
 
   const isEndMonthDisabled = (monthIndex: number, year: number) => {
-    if (!dateRange.from) return true;
-    const checkDate = new Date(year, monthIndex, 1);
-    return checkDate < dateRange.from;
+    if (!internalStartDate) return true;
+
+    const [startMonth, startYear] = internalStartDate.split("-").map(Number);
+    const checkMonth = monthIndex + 1;
+
+    return year < startYear || (year === startYear && checkMonth < startMonth);
+  };
+
+  const formatDisplay = (dateStr?: string) => {
+    if (!dateStr) return "...";
+    const [month, year] = dateStr.split("-");
+    const monthName = months[parseInt(month) - 1].slice(0, 3);
+    return `${monthName} ${year}`;
   };
 
   const getButtonText = () => {
-    if (!dateRange.from) return placeholder;
-    if (!dateRange.to) return `${format(dateRange.from, "MMM yyyy")} - ...`;
-    return `${format(dateRange.from, "MMM yyyy")} - ${format(
-      dateRange.to,
-      "MMM yyyy"
+    if (!internalStartDate && !internalEndDate) return placeholder;
+    if (!internalStartDate) return `... - ${formatDisplay(internalEndDate)}`;
+    if (!internalEndDate) return `${formatDisplay(internalStartDate)} - ...`;
+    return `${formatDisplay(internalStartDate)} - ${formatDisplay(
+      internalEndDate
     )}`;
   };
-
-  console.log("start month", startMonth);
-  console.log("start year", startYear);
-  console.log("end month", endMonth);
-  console.log("end Year", endYear);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -145,7 +220,7 @@ export default function DualMonthYearPicker({
             variant="outline"
             className={cn(
               "w-full justify-start text-left font-normal",
-              !dateRange.from && "text-muted-foreground",
+              !internalStartDate && !internalEndDate && "text-muted-foreground",
               className
             )}
           >
@@ -153,12 +228,14 @@ export default function DualMonthYearPicker({
             {getButtonText()}
           </Button>
 
-          {dateRange.from && (
+          {(internalStartDate || internalEndDate) && (
             <button
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 clearSelection();
+                onStartDateChange?.(undefined);
+                onEndDateChange?.(undefined);
               }}
               className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 p-0 text-muted-foreground hover:text-foreground"
             >
@@ -175,15 +252,14 @@ export default function DualMonthYearPicker({
               <h3 className="font-semibold text-sm font-mono text-black">
                 Start Month
               </h3>
-              {dateRange.from && (
+              {internalStartDate && (
                 <p className="text-xs text-muted-foreground mt-1">
-                  {format(dateRange.from, "MMMM yyyy")}
+                  {formatDisplay(internalStartDate)}
                 </p>
               )}
             </div>
 
             <div className="space-y-3">
-              {/* Start Year Navigation */}
               <div className="flex items-center justify-between">
                 <Button
                   variant="outline"
@@ -204,20 +280,18 @@ export default function DualMonthYearPicker({
                 </Button>
               </div>
 
-              <div className="space-y-3">
-                <div className="grid grid-cols-3 gap-1">
-                  {months.map((month, index) => (
-                    <Button
-                      key={month}
-                      variant={startMonth === index ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => handleStartMonthSelect(index)}
-                      className="h-7 text-xs"
-                    >
-                      {month.slice(0, 3)}
-                    </Button>
-                  ))}
-                </div>
+              <div className="grid grid-cols-3 gap-1">
+                {months.map((month, index) => (
+                  <Button
+                    key={month}
+                    variant={startMonth === index ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleStartMonthSelect(index)}
+                    className="h-7 text-xs"
+                  >
+                    {month.slice(0, 3)}
+                  </Button>
+                ))}
               </div>
             </div>
           </div>
@@ -226,37 +300,36 @@ export default function DualMonthYearPicker({
           <div
             className={cn(
               "p-4",
-              !dateRange.from && "opacity-50 pointer-events-none"
+              !internalStartDate && "opacity-50 pointer-events-none"
             )}
           >
             <div className="text-center mb-3">
               <h3 className="font-semibold text-sm font-mono">End Month</h3>
-              {!dateRange.from && (
+              {!internalStartDate && (
                 <p className="text-xs text-muted-foreground mt-1 font-mono">
                   Select start month first
                 </p>
               )}
-              {dateRange.from && !dateRange.to && (
+              {internalStartDate && !internalEndDate && (
                 <p className="text-xs text-muted-foreground mt-1">
                   Choose end month
                 </p>
               )}
-              {dateRange.to && (
+              {internalEndDate && (
                 <p className="text-xs text-muted-foreground mt-1">
-                  {format(dateRange.to, "MMMM yyyy")}
+                  {formatDisplay(internalEndDate)}
                 </p>
               )}
             </div>
 
             <div className="space-y-3">
-              {/* End Year Navigation */}
               <div className="flex items-center justify-between">
                 <Button
                   variant="outline"
                   size="icon"
                   onClick={() => navigateEndYear("prev")}
                   className="h-7 w-7"
-                  disabled={!dateRange.from}
+                  disabled={!internalStartDate}
                 >
                   <ChevronLeft className="h-3 w-3" />
                 </Button>
@@ -266,47 +339,49 @@ export default function DualMonthYearPicker({
                   size="icon"
                   onClick={() => navigateEndYear("next")}
                   className="h-7 w-7"
-                  disabled={!dateRange.from}
+                  disabled={!internalStartDate}
                 >
                   <ChevronRight className="h-3 w-3" />
                 </Button>
               </div>
-              <div className="space-y-3">
-                <div className="grid grid-cols-3 gap-1">
-                  {months.map((month, index) => (
-                    <Button
-                      key={month}
-                      variant={endMonth === index ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => handleEndMonthSelect(index)}
-                      className={cn(
-                        "h-7 text-xs",
-                        isEndMonthDisabled(index, endYear) &&
-                          "opacity-50 pointer-events-none"
-                      )}
-                    >
-                      {month.slice(0, 3)}
-                    </Button>
-                  ))}
-                </div>
+              <div className="grid grid-cols-3 gap-1">
+                {months.map((month, index) => (
+                  <Button
+                    key={month}
+                    variant={endMonth === index ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleEndMonthSelect(index)}
+                    className={cn(
+                      "h-7 text-xs",
+                      isEndMonthDisabled(index, endYear) &&
+                        "opacity-50 pointer-events-none"
+                    )}
+                  >
+                    {month.slice(0, 3)}
+                  </Button>
+                ))}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Clear Button */}
-        {dateRange.from && (
-          <div className="p-3 pt-0">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={clearSelection}
-              className="w-full"
-            >
-              Clear Selection
-            </Button>
-          </div>
-        )}
+        <div className="p-3 pt-0">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              clearSelection();
+              onStartDateChange?.(undefined);
+              onEndDateChange?.(undefined);
+            }}
+            className="w-full"
+          >
+            Clear Selection
+          </Button>
+          <Button className="mt-2 w-full" onClick={handleApply}>
+            Apply
+          </Button>
+        </div>
       </PopoverContent>
     </Popover>
   );

@@ -15,6 +15,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { DateRange } from "@/lib/types";
 
 const COLORS = {
   used: "#e05d44",
@@ -32,7 +33,7 @@ interface ApiResponse {
   message: string;
 }
 
-export function PieChartComponent() {
+export function PieChartComponent({ startDate, endDate }: DateRange) {
   const [budgetData, setBudgetData] = useState<BudgetData | null>(null);
 
   const chartConfig = {
@@ -48,11 +49,22 @@ export function PieChartComponent() {
 
   useEffect(() => {
     const fetchPieChartData = async () => {
+      // calculating the current month and year
+      const currentDate = new Date();
+      const currentMonth = `${String(currentDate.getMonth() + 1).padStart(
+        2,
+        "0"
+      )}-${currentDate.getFullYear()}`;
+
+      const startPeriod = startDate || currentMonth;
+      const endPeriod = endDate || currentMonth;
+
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/Budget`,
-          { method: "GET" }
-        );
+        const url = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/Budget`);
+        url.searchParams.append("startPeriod", startPeriod);
+        url.searchParams.append("endPeriod", endPeriod);
+
+        const response = await fetch(url.toString());
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -72,7 +84,7 @@ export function PieChartComponent() {
       }
     };
     fetchPieChartData();
-  }, []);
+  }, [startDate, endDate]);
 
   // Calculate data
   const totalBudget = budgetData
