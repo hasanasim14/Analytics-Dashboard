@@ -26,22 +26,31 @@ const months = [
   "December",
 ];
 
+// Format month and year into "MM-YYYY" string
+const formatDateString = (month: number, year: number) => {
+  return `${String(month + 1).padStart(2, "0")}-${year}`;
+};
+
 export default function DualMonthYearPicker({
   startDate,
   endDate,
   onStartDateChange,
   onEndDateChange,
-  placeholder = "Pick Dates",
   className,
 }: DualMonthYearPickerProps) {
   const [open, setOpen] = useState(false);
 
-  // Internal state for the selected dates
+  // Internal state for the selected dates - default to current month if none provided
+  const getCurrentMonthString = () => {
+    const now = new Date();
+    return formatDateString(now.getMonth(), now.getFullYear());
+  };
+
   const [internalStartDate, setInternalStartDate] = useState<
     string | undefined
-  >(startDate);
+  >(startDate || getCurrentMonthString());
   const [internalEndDate, setInternalEndDate] = useState<string | undefined>(
-    endDate
+    endDate || getCurrentMonthString()
   );
 
   // Parse the initial dates or use current month/year as default
@@ -64,19 +73,25 @@ export default function DualMonthYearPicker({
   };
 
   // Format month and year into "MM-YYYY" string
-  const formatDateString = (month: number, year: number) => {
-    return `${String(month + 1).padStart(2, "0")}-${year}`;
-  };
+  // const formatDateString = (month: number, year: number) => {
+  //   return `${String(month + 1).padStart(2, "0")}-${year}`
+  // }
 
   // Start month picker state
   const [startMonth, setStartMonth] = useState(
-    parseDateString(startDate).month
+    parseDateString(startDate || getCurrentMonthString()).month
   );
-  const [startYear, setStartYear] = useState(parseDateString(startDate).year);
+  const [startYear, setStartYear] = useState(
+    parseDateString(startDate || getCurrentMonthString()).year
+  );
 
   // End month picker state
-  const [endMonth, setEndMonth] = useState(parseDateString(endDate).month);
-  const [endYear, setEndYear] = useState(parseDateString(endDate).year);
+  const [endMonth, setEndMonth] = useState(
+    parseDateString(endDate || getCurrentMonthString()).month
+  );
+  const [endYear, setEndYear] = useState(
+    parseDateString(endDate || getCurrentMonthString()).year
+  );
 
   useEffect(() => {
     setInternalStartDate(startDate);
@@ -209,7 +224,11 @@ export default function DualMonthYearPicker({
   };
 
   const getButtonText = () => {
-    if (!internalStartDate && !internalEndDate) return placeholder;
+    if (!startDate && !endDate && !internalStartDate && !internalEndDate) {
+      const currentMonth = getCurrentMonthString();
+      const display = formatDisplay(currentMonth);
+      return `${display} - ${display}`;
+    }
     if (!internalStartDate) return `... - ${formatDisplay(internalEndDate)}`;
     if (!internalEndDate) return `${formatDisplay(internalStartDate)} - ...`;
     return `${formatDisplay(internalStartDate)} - ${formatDisplay(
