@@ -14,15 +14,17 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { toast } from "sonner";
 import { Checkbox } from "./ui/checkbox";
+import { DialogDescription } from "@radix-ui/react-dialog";
 
 export const SetupDialog = () => {
-  const [maxCost, setMaxCost] = useState("0.00");
-  const [maxMessages, setMaxMessages] = useState("0.00");
+  const [maxCost, setMaxCost] = useState(0);
+  const [maxMessages, setMaxMessages] = useState(0);
+  const [monthlyBudget, setMonthlyBudget] = useState(0);
   const [apiKey, setApiKey] = useState("");
   const [loading, setLoading] = useState(false);
   const [setupPageDialog, setSetupPageDialog] = useState(false);
-  const [originalMaxCost, setOriginalMaxCost] = useState("0.00");
-  const [originalMaxMessages, setOriginalMaxMessages] = useState("0");
+  const [originalMaxCost, setOriginalMaxCost] = useState(0);
+  const [originalMaxMessages, setOriginalMaxMessages] = useState(0);
 
   // Add state for checkboxes
   const [enableMaxCost, setEnableMaxCost] = useState(false);
@@ -54,16 +56,17 @@ export const SetupDialog = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          maxChat: enableMaxMessages ? maxMessages : "0",
-          maxVal: enableMaxCost ? maxCost : "0.00",
+          maxChat: enableMaxMessages ? maxMessages : 0,
+          maxVal: enableMaxCost ? maxCost : 0,
+          mthBud: monthlyBudget,
         }),
       });
       if (res.ok) {
         toast.success("Values Saved Successfully!");
         setSetupPageDialog(false);
         // Update original values after successful save
-        setOriginalMaxCost(enableMaxCost ? maxCost : "0.00");
-        setOriginalMaxMessages(enableMaxMessages ? maxMessages : "0");
+        setOriginalMaxCost(enableMaxCost ? maxCost : 0);
+        setOriginalMaxMessages(enableMaxMessages ? maxMessages : 0);
       } else {
         toast.error("Failed to save values");
       }
@@ -103,6 +106,8 @@ export const SetupDialog = () => {
         const fetchedMaxCost = data?.data?.maxVal || "0.00";
         const fetchedMaxMessages = data?.data?.maxChat || "0";
 
+        setMonthlyBudget(data?.data?.mthBud);
+
         // Determine if values are enabled (not zero)
         const costEnabled =
           fetchedMaxCost !== "0.00" &&
@@ -136,8 +141,8 @@ export const SetupDialog = () => {
     // Restore original values
     setMaxCost(originalMaxCost);
     setMaxMessages(originalMaxMessages);
-    setEnableMaxCost(originalMaxCost !== "0.00");
-    setEnableMaxMessages(originalMaxMessages !== "0");
+    setEnableMaxCost(originalMaxCost !== 0);
+    setEnableMaxMessages(originalMaxMessages !== 0);
   };
 
   return (
@@ -151,6 +156,7 @@ export const SetupDialog = () => {
           <Settings className="w-5 h-5" />
         </Button>
       </DialogTrigger>
+      <DialogDescription className="sr-only">Set up Dialog</DialogDescription>
       <DialogContent className="sm:max-w-[45%] max-h-[90vh] overflow-y-auto [&>button]:hidden">
         <DialogHeader>
           <DialogTitle className="text-2xl uppercase font-mono tracking-widest">
@@ -177,7 +183,13 @@ export const SetupDialog = () => {
             <Label htmlFor="monthly-budget" className="font-mono mb-2">
               Monthly Budget
             </Label>
-            <Input id="monthly budget" type="number" className="font-mono" />
+            <Input
+              id="monthly budget"
+              type="number"
+              value={monthlyBudget}
+              onChange={(e) => setMonthlyBudget(Number(e.target.value))}
+              className="font-mono"
+            />
           </div>
 
           <div className="space-y-4">
@@ -188,7 +200,7 @@ export const SetupDialog = () => {
                 onCheckedChange={(checked) => {
                   setEnableMaxCost(checked === true);
                   if (!checked) {
-                    setMaxCost("0.00");
+                    setMaxCost(0);
                   }
                 }}
               />
@@ -207,7 +219,7 @@ export const SetupDialog = () => {
                 step="0.01"
                 placeholder="e.g. 5.00"
                 value={maxCost}
-                onChange={(e) => setMaxCost(e.target.value)}
+                onChange={(e) => setMaxCost(Number(e.target.value))}
                 disabled={!enableMaxCost}
                 className={
                   !enableMaxCost ? "opacity-50 cursor-not-allowed" : ""
@@ -226,7 +238,7 @@ export const SetupDialog = () => {
                 onCheckedChange={(checked) => {
                   setEnableMaxMessages(checked === true);
                   if (!checked) {
-                    setMaxMessages("0");
+                    setMaxMessages(0);
                   }
                 }}
               />
@@ -245,7 +257,7 @@ export const SetupDialog = () => {
                 step="1"
                 placeholder="e.g. 100"
                 value={maxMessages}
-                onChange={(e) => setMaxMessages(e.target.value)}
+                onChange={(e) => setMaxMessages(Number(e.target.value))}
                 disabled={!enableMaxMessages}
                 className={
                   !enableMaxMessages ? "opacity-50 cursor-not-allowed" : ""

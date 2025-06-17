@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { CalendarIcon, ChevronLeft, ChevronRight, X } from "lucide-react";
-import { DualMonthYearPickerProps } from "@/lib/types";
+import type { DualMonthYearPickerProps } from "@/lib/types";
 
 const months = [
   "January",
@@ -99,16 +99,21 @@ export default function DualMonthYearPicker({
     setStartMonth(monthIndex);
     setInternalStartDate(newDateStr);
 
-    // If end date exists and is before new start date, clear it
-    if (internalEndDate) {
+    // If no end date exists, automatically set it to the same as start date
+    if (!internalEndDate) {
+      setEndMonth(monthIndex);
+      setEndYear(startYear);
+      setInternalEndDate(newDateStr);
+    } else {
+      // If end date exists and is before new start date, set end date to match start date
       const [endMonth, endYear] = internalEndDate.split("-").map(Number);
       const newMonth = monthIndex + 1;
       const newYear = startYear;
 
       if (newYear > endYear || (newYear === endYear && newMonth > endMonth)) {
-        setInternalEndDate(undefined);
         setEndMonth(monthIndex);
         setEndYear(startYear);
+        setInternalEndDate(newDateStr);
       }
     }
   };
@@ -199,7 +204,7 @@ export default function DualMonthYearPicker({
   const formatDisplay = (dateStr?: string) => {
     if (!dateStr) return "...";
     const [month, year] = dateStr.split("-");
-    const monthName = months[parseInt(month) - 1].slice(0, 3);
+    const monthName = months[Number.parseInt(month) - 1].slice(0, 3);
     return `${monthName} ${year}`;
   };
 

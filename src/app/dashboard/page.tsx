@@ -27,13 +27,10 @@ export default function Dashboard() {
           <DualMonthYearPicker
             startDate={startDate}
             endDate={endDate}
-            // value={}
             onStartDateChange={(date) => {
-              console.log("Start date changed:", date);
               setStartDate(date);
             }}
             onEndDateChange={(date) => {
-              console.log("End date changed:", date);
               setEndDate(date);
             }}
           />
