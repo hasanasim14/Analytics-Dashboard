@@ -30,6 +30,7 @@ import {
 } from "./ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { DateRange } from "@/lib/types";
+import ReactMarkdown from "react-markdown";
 
 interface Session {
   sessionID: string;
@@ -380,9 +381,11 @@ export function SessionSummaryTable({ startDate, endDate }: DateRange) {
                                   {new Date(msg.ts).toLocaleString()}{" "}
                                 </span>
                               </div>
-                              <p className="text-gray-800 whitespace-pre-wrap text-sm">
+                              <ReactMarkdown>
+                                {/* <p className="text-gray-800 whitespace-pre-wrap text-sm"> */}
                                 {msg.content}
-                              </p>
+                                {/* </p> */}
+                              </ReactMarkdown>
                             </div>
                           </div>
                         </div>
