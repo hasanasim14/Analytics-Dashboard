@@ -5,9 +5,11 @@ import { PieChartComponent } from "@/components/PieChartComponent";
 import { BarChartComponent } from "@/components/BarChartComponent";
 import { SessionSummaryTable } from "@/components/SessionSummaryTable";
 import { SetupDialog } from "@/components/SetupDialog";
+// import { FeaturesPieChart } from "@/components/FeaturesPieChart";
 import Navbar from "@/components/Navbar";
 import Cards from "@/components/Cards";
 import DualMonthYearPicker from "@/components/MonthRangePicker";
+import FeaturesPieChart from "@/components/FeaturesPieChart";
 
 export default function Dashboard() {
   const [startDate, setStartDate] = useState<string>();
@@ -41,8 +43,11 @@ export default function Dashboard() {
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-2">
             <BarChartComponent startDate={startDate} endDate={endDate} />
+          </div>
+          <div className="lg:col-span-1">
+            <FeaturesPieChart startDate={startDate} endDate={endDate} />
           </div>
           <div className="lg:col-span-1">
             <PieChartComponent startDate={startDate} endDate={endDate} />

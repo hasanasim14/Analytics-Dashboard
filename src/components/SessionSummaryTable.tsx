@@ -31,6 +31,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { DateRange } from "@/lib/types";
 import ReactMarkdown from "react-markdown";
+import { Badge } from "./ui/badge";
 
 interface Session {
   sessionID: string;
@@ -61,6 +62,8 @@ interface ApiResponse {
 
 interface TranscriptResponse {
   data: TranscriptMessage[];
+  // badges:{};
+  badges: Record<string, number>;
   success: boolean;
   message: string;
 }
@@ -75,6 +78,9 @@ export function SessionSummaryTable({ startDate, endDate }: DateRange) {
   const [isLoading, setIsLoading] = useState(true);
   const [transcript, setTranscript] = useState<TranscriptMessage[]>([]);
   const [isTranscriptLoading, setIsTranscriptLoading] = useState(false);
+  const [badges, setBadges] = useState({});
+
+  console.log("the selected sessoi", badges);
 
   const handleRowClick = async (session: Session) => {
     setSelectedSession(session);
@@ -90,7 +96,8 @@ export function SessionSummaryTable({ startDate, endDate }: DateRange) {
       );
 
       const responseData: TranscriptResponse = await response.json();
-      setTranscript(responseData.data || []);
+      setTranscript(responseData?.data || []);
+      setBadges(responseData?.badges);
     } catch (error) {
       console.error("Failed to fetch transcript:", error);
     } finally {
@@ -118,8 +125,8 @@ export function SessionSummaryTable({ startDate, endDate }: DateRange) {
         const response = await fetch(url.toString());
 
         const responseData: ApiResponse = await response.json();
-        setSessionData(responseData.data.Records);
-        setTotalRecords(responseData.data.Records.length);
+        setSessionData(responseData?.data?.Records);
+        setTotalRecords(responseData?.data?.Records?.length);
       } catch (error) {
         console.error("Failed to fetch session data:", error);
       } finally {
@@ -301,8 +308,24 @@ export function SessionSummaryTable({ startDate, endDate }: DateRange) {
 
           {selectedSession && (
             <div className="flex-1 overflow-auto p-6 space-y-6">
+              {badges && Object.keys(badges).length > 0 && (
+                <div className="space-y-1">
+                  <div className="flex flex-wrap gap-2">
+                    {Object.entries(badges).map(([key, value]) => (
+                      <Badge
+                        key={key}
+                        variant="secondary"
+                        className="font-mono bg-black text-white"
+                      >
+                        {`${key}: ${value}`}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-1">
-                <h3 className="text-sm font-medium text-gray-500">
+                <h3 className="text-sm font-medium text-gray-500 font-mono">
                   Session ID
                 </h3>
                 <p className="text-sm font-mono text-gray-800">
@@ -311,26 +334,26 @@ export function SessionSummaryTable({ startDate, endDate }: DateRange) {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-1">
-                  <h3 className="text-sm font-medium text-gray-500">
+                  <h3 className="text-sm font-medium text-gray-500 font-mono">
                     Total Cost
                   </h3>
-                  <p className="text-sm text-gray-800">
+                  <p className="text-sm text-gray-800 font-mono">
                     {selectedSession.Total_Cost_PKR.toFixed(2)} PKR
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <h3 className="text-sm font-medium text-gray-500">
+                  <h3 className="text-sm font-medium text-gray-500 font-mono">
                     Total Messages
                   </h3>
-                  <p className="text-sm text-gray-800">
+                  <p className="text-sm text-gray-800 font-mono">
                     {selectedSession.Total_Messages}
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <h3 className="text-sm font-medium text-gray-500">
+                  <h3 className="text-sm font-medium text-gray-500 font-mono">
                     Duration
                   </h3>
-                  <p className="text-sm text-gray-800">
+                  <p className="text-sm text-gray-800 font-mono">
                     {selectedSession.Duration_Mins.toFixed(1)} minutes
                   </p>
                 </div>
