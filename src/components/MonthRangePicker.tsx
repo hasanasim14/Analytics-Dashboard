@@ -389,7 +389,7 @@ export default function DualMonthYearPicker({
           </div>
         </div>
 
-        <div className="p-3 pt-0">
+        <div className="p-3 pt-0 font-mono">
           <Button
             variant="outline"
             size="sm"

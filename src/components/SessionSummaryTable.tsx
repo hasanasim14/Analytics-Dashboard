@@ -80,8 +80,6 @@ export function SessionSummaryTable({ startDate, endDate }: DateRange) {
   const [isTranscriptLoading, setIsTranscriptLoading] = useState(false);
   const [badges, setBadges] = useState({});
 
-  console.log("the selected sessoi", badges);
-
   const handleRowClick = async (session: Session) => {
     setSelectedSession(session);
     setIsTranscriptLoading(true);
@@ -163,10 +161,10 @@ export function SessionSummaryTable({ startDate, endDate }: DateRange) {
             </div>
           ) : (
             <>
-              <div className="rounded-lg border border-gray-200 overflow-hidden">
+              <div className="rounded-lg border border-gray-200 overflow-hidden font-mono">
                 <Table className="min-w-[1000px]">
                   <TableHeader>
-                    <TableRow className="bg-[#e05d44] text-white hover:bg-[#e05c44] font-mono transition-colors">
+                    <TableRow className="bg-[#e05d44] text-white hover:bg-[#e05c44] transition-colors">
                       <TableHead className="font-medium text-white">
                         Session ID
                       </TableHead>

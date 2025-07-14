@@ -35,7 +35,7 @@ const Navbar = () => {
             align="end"
             sideOffset={8}
           >
-            <div className="grid gap-0.5">
+            <div className="grid gap-0.5 font-mono">
               <Button
                 variant="ghost"
                 size="sm"

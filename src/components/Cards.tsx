@@ -37,13 +37,13 @@ const Cards = ({ startDate, endDate }: DateRange) => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <Card className="transition-all hover:shadow-lg hover:border-orange-500/30">
+      <Card className="transition-all font-mono hover:shadow-lg hover:border-orange-500/30">
         <CardHeader className="pb-2">
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-lg bg-orange-500/10">
               <DollarSign className="h-6 w-6 text-orange-500" />
             </div>
-            <CardTitle className="text-lg font-mono font-semibold text-gray-800">
+            <CardTitle className="text-lg font-semibold text-gray-800">
               Total Spent
             </CardTitle>
           </div>
@@ -55,13 +55,13 @@ const Cards = ({ startDate, endDate }: DateRange) => {
         </CardContent>
       </Card>
 
-      <Card className="transition-all hover:shadow-lg hover:border-orange-500/30">
+      <Card className="transition-all font-mono hover:shadow-lg hover:border-orange-500/30">
         <CardHeader className="pb-2">
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-lg bg-orange-500/10">
               <Activity className="h-6 w-6 text-orange-500" />
             </div>
-            <CardTitle className="text-lg font-mono font-semibold text-gray-800">
+            <CardTitle className="text-lg font-semibold text-gray-800">
               Sessions
             </CardTitle>
           </div>
@@ -73,13 +73,13 @@ const Cards = ({ startDate, endDate }: DateRange) => {
         </CardContent>
       </Card>
 
-      <Card className="transition-all hover:shadow-lg hover:border-orange-500/30">
+      <Card className="transition-all font-mono hover:shadow-lg hover:border-orange-500/30">
         <CardHeader className="pb-2">
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-lg bg-orange-500/10">
               <Calculator className="h-6 w-6 text-orange-500" />
             </div>
-            <CardTitle className="text-lg font-mono font-semibold text-gray-800">
+            <CardTitle className="text-lg font-semibold text-gray-800">
               Avg Cost/Session
             </CardTitle>
           </div>
@@ -91,13 +91,13 @@ const Cards = ({ startDate, endDate }: DateRange) => {
         </CardContent>
       </Card>
 
-      <Card className="transition-all hover:shadow-lg hover:border-orange-500/30">
+      <Card className="transition-all font-mono hover:shadow-lg hover:border-orange-500/30">
         <CardHeader className="pb-2">
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-lg bg-orange-500/10">
               <BarChart className="h-6 w-6 text-orange-500" />
             </div>
-            <CardTitle className="text-lg font-mono font-semibold text-gray-800">
+            <CardTitle className="text-lg font-semibold text-gray-800">
               Avg Sessions/Day
             </CardTitle>
           </div>

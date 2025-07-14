@@ -1,55 +1,49 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Pie, PieChart, Cell, ResponsiveContainer } from "recharts";
+import { Info } from "lucide-react";
+import { PolarAngleAxis, PolarGrid, Radar, RadarChart } from "recharts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import {
-  type ChartConfig,
+  ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { DateRange } from "@/lib/types";
+import { Button } from "./ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
-const COLORS = {
-  used: "#e05d44",
-  unused: "#e5e7eb",
-};
-
-interface BudgetData {
-  TotalSpend: number;
-  remainingAmount: number;
+interface FeaturesData {
+  "Track & Trace": number;
+  Information: number;
+  Tarrif: number;
+  "Information - Express Center": number;
+  QSR: number;
+  "Information - Cities": number;
+  "Complain - Track": number;
+  "Complain - New": number;
+  Email: number;
 }
 
 interface ApiResponse {
-  data: BudgetData;
+  data: FeaturesData;
   success: boolean;
   message: string;
 }
 
-const FeaturesPieChart = ({ startDate, endDate }: DateRange) => {
-  const [budgetData, setBudgetData] = useState<BudgetData | null>(null);
+const chartConfig = {
+  desktop: {
+    label: "Desktop",
+    color: "var(--chart-1)",
+  },
+} satisfies ChartConfig;
 
-  const chartConfig = {
-    used: {
-      label: "Used",
-      color: COLORS.used,
-    },
-    unused: {
-      label: "Remaining",
-      color: COLORS.unused,
-    },
-  } satisfies ChartConfig;
+const FeaturesPieChart = ({ startDate, endDate }: DateRange) => {
+  const [featuresData, setFeaturesData] = useState<FeaturesData | null>(null);
 
   useEffect(() => {
     const fetchPieChartData = async () => {
-      // calculating the current month and year
       const currentDate = new Date();
       const currentMonth = `${String(currentDate.getMonth() + 1).padStart(
         2,
@@ -73,114 +67,130 @@ const FeaturesPieChart = ({ startDate, endDate }: DateRange) => {
         const responseData: ApiResponse = await response.json();
 
         if (responseData.success) {
-          setBudgetData(responseData.data);
+          setFeaturesData(responseData.data);
         } else {
-          throw new Error(responseData.message || "Failed to load budget data");
+          throw new Error(
+            responseData.message || "Failed to load feature data"
+          );
         }
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : "Failed to fetch data";
-        console.error("Error fetching budget data:", errorMessage);
+        console.error("Error fetching feature data:", errorMessage);
       }
     };
+
     fetchPieChartData();
   }, [startDate, endDate]);
 
-  // Calculate data
-  const totalBudget = budgetData
-    ? budgetData.TotalSpend + budgetData.remainingAmount
-    : 0;
-  const usedPercentage = budgetData
-    ? (budgetData.TotalSpend / totalBudget) * 100
-    : 0;
-  const remainingPercentage = budgetData
-    ? (budgetData.remainingAmount / totalBudget) * 100
-    : 0;
-
-  const chartData = [
-    {
-      name: "used",
-      value: budgetData?.TotalSpend || 0,
-      percentage: usedPercentage,
-    },
-    {
-      name: "unused",
-      value: budgetData?.remainingAmount || 0,
-      percentage: remainingPercentage,
-    },
+  const featureOrder: (keyof FeaturesData)[] = [
+    "Complain - Track",
+    "Complain - New",
+    "Tarrif",
+    "Track & Trace",
+    "Information - Cities",
+    "Information - Express Center",
+    "Information",
+    "QSR",
+    "Email",
   ];
 
+  // Mapping into shorter names
+  const featureLabels: Record<keyof FeaturesData, string> = {
+    "Track & Trace": "T&T",
+    Information: "Info",
+    Tarrif: "Tf",
+    "Complain - New": "Comp - N",
+    QSR: "Q",
+    "Information - Express Center": "Info - EXC",
+    "Information - Cities": "Info - C",
+    "Complain - Track": "Comp - T",
+    Email: "E",
+  };
+
+  // New transformed data
+  const transformedData = featuresData
+    ? featureOrder.map((key) => ({
+        feature: featureLabels[key],
+        value: featuresData[key],
+      }))
+    : [];
+
   return (
-    <Card className="flex flex-col border-0 shadow-sm h-full">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-semibold font-mono uppercase tracking-widest text-center">
-          Features Usage
-        </CardTitle>
-        <CardDescription className="text-sm text-muted-foreground font-mono text-center">
-          PKR {budgetData?.TotalSpend?.toLocaleString() || 0} of{" "}
-          {totalBudget.toLocaleString()} used
-        </CardDescription>
+    <Card className="h-full">
+      <CardHeader>
+        <div className="flex items-center justify-between w-full">
+          <CardTitle className="font-mono uppercase text-center text-lg">
+            Features usage
+          </CardTitle>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="outline" size="icon">
+                <Info className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent
+              side="bottom"
+              className="w-84 p-4 shadow-lg rounded-lg"
+            >
+              <div className="text-sm font-semibold text-gray-400 mb-2 font-mono">
+                Feature Breakdown
+              </div>
+              <ul className="list-disc list-inside space-y-1 text-sm text-gray-200 font-mono">
+                <li>
+                  <span className="font-medium">T&T</span> - Track & Trace
+                </li>
+                <li>
+                  <span className="font-medium">Info</span> - Information
+                </li>
+                <li>
+                  <span className="font-medium">Tf</span> - Tarrif
+                </li>
+                <li>
+                  <span className="font-medium">Q</span> - QSR
+                </li>
+                <li>
+                  <span className="font-medium">Info - EXC</span> - Information
+                  - Express Center
+                </li>
+                <li>
+                  <span className="font-medium">Info - C</span> - Information -
+                  Cities
+                </li>
+                <li>
+                  <span className="font-medium">Comp - T</span> - Complain -
+                  Track
+                </li>
+                <li>
+                  <span className="font-medium">Comp - N</span> - Complain - New
+                </li>
+                <li>
+                  <span className="font-medium">E</span> - Email
+                </li>
+              </ul>
+            </TooltipContent>
+          </Tooltip>
+        </div>
       </CardHeader>
-      <CardContent className="flex flex-col items-center pt-0">
+
+      <CardContent className="pb-0">
         <ChartContainer
           config={chartConfig}
-          className="mx-auto aspect-square h-[200px]"
+          className="mx-auto aspect-square max-h-[300px] font-mono"
         >
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={chartData}
-                dataKey="value"
-                nameKey="name"
-                innerRadius={60}
-                outerRadius={80}
-                paddingAngle={2}
-                startAngle={90}
-                endAngle={-270}
-                animationDuration={800}
-                animationEasing="ease-out"
-              >
-                {chartData.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={COLORS[entry.name as keyof typeof COLORS]}
-                    stroke="transparent"
-                  />
-                ))}
-              </Pie>
-              <ChartTooltip
-                cursor={false}
-                content={
-                  <ChartTooltipContent
-                    formatter={(value) => [
-                      `PKR ${Number(value).toLocaleString()}`,
-                      chartConfig[
-                        value === chartData[0].value ? "used" : "unused"
-                      ].label,
-                    ]}
-                  />
-                }
-              />
-            </PieChart>
-          </ResponsiveContainer>
+          <RadarChart data={transformedData}>
+            <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+            <PolarAngleAxis dataKey="feature" />
+            <PolarGrid />
+            <Radar
+              dataKey="value"
+              fill="var(--color-desktop)"
+              fillOpacity={0.6}
+              stroke="var(--color-desktop)"
+              dot={{ r: 4, fillOpacity: 1 }}
+            />
+          </RadarChart>
         </ChartContainer>
-
-        <div className="mt-4 flex flex-wrap justify-center gap-4">
-          {chartData.map((entry) => (
-            <div key={entry.name} className="flex items-center">
-              <div
-                className="mr-2 h-3 w-3 rounded-full"
-                style={{
-                  backgroundColor: COLORS[entry.name as keyof typeof COLORS],
-                }}
-              />
-              <span className="text-sm font-medium font-mono">
-                {chartConfig[entry.name as keyof typeof COLORS].label}:{" "}
-                {entry.percentage.toFixed(1)}%
-              </span>
-            </div>
-          ))}
-        </div>
       </CardContent>
     </Card>
   );
