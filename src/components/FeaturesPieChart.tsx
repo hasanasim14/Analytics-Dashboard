@@ -85,10 +85,10 @@ const FeaturesPieChart = ({ startDate, endDate }: DateRange) => {
 
   const featureOrder: (keyof FeaturesData)[] = [
     "Complain - Track",
-    "Complain - New",
     "Tarrif",
     "Track & Trace",
     "Information - Cities",
+    "Complain - New",
     "Information - Express Center",
     "Information",
     "QSR",
@@ -99,13 +99,13 @@ const FeaturesPieChart = ({ startDate, endDate }: DateRange) => {
   const featureLabels: Record<keyof FeaturesData, string> = {
     "Track & Trace": "T&T",
     Information: "Info",
-    Tarrif: "Tf",
+    Tarrif: "Tarrif",
     "Complain - New": "Comp - N",
-    QSR: "Q",
-    "Information - Express Center": "Info - EXC",
+    QSR: "QSR",
+    "Information - Express Center": "ExCenters",
     "Information - Cities": "Info - C",
     "Complain - Track": "Comp - T",
-    Email: "E",
+    Email: "Email",
   };
 
   // New transformed data
@@ -131,7 +131,7 @@ const FeaturesPieChart = ({ startDate, endDate }: DateRange) => {
             </TooltipTrigger>
             <TooltipContent
               side="bottom"
-              className="w-84 p-4 shadow-lg rounded-lg"
+              className="w-110 p-4 shadow-lg rounded-lg"
             >
               <div className="text-sm font-semibold text-gray-400 mb-2 font-mono">
                 Feature Breakdown
@@ -144,14 +144,8 @@ const FeaturesPieChart = ({ startDate, endDate }: DateRange) => {
                   <span className="font-medium">Info</span> - Information
                 </li>
                 <li>
-                  <span className="font-medium">Tf</span> - Tarrif
-                </li>
-                <li>
-                  <span className="font-medium">Q</span> - QSR
-                </li>
-                <li>
-                  <span className="font-medium">Info - EXC</span> - Information
-                  - Express Center
+                  <span className="font-medium">ExCenters</span> - Information -
+                  Express Center
                 </li>
                 <li>
                   <span className="font-medium">Info - C</span> - Information -
@@ -163,9 +157,6 @@ const FeaturesPieChart = ({ startDate, endDate }: DateRange) => {
                 </li>
                 <li>
                   <span className="font-medium">Comp - N</span> - Complain - New
-                </li>
-                <li>
-                  <span className="font-medium">E</span> - Email
                 </li>
               </ul>
             </TooltipContent>
