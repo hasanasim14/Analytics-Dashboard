@@ -40,6 +40,9 @@ const Navbar = () => {
                 variant="ghost"
                 size="sm"
                 className="justify-start gap-2 px-3 py-2 h-8 text-sm font-normal hover:bg-[#1f1f1f] hover:text-white"
+                onClick={() =>
+                  window.open("https://theaisystems.com/", "_blank")
+                }
               >
                 <Cpu className="h-3.5 w-3.5 text-[#a0a0a0]" />
                 <span>AI Systems</span>
@@ -48,6 +51,9 @@ const Navbar = () => {
                 variant="ghost"
                 size="sm"
                 className="justify-start gap-2 px-3 py-2 h-8 text-sm font-normal hover:bg-[#1f1f1f] hover:text-white"
+                onClick={() =>
+                  (window.location.href = "mailto:support@theaijurist.com")
+                }
               >
                 <Headset className="h-3.5 w-3.5 text-[#a0a0a0]" />
                 <span>Support</span>

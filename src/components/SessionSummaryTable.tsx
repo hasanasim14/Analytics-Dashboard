@@ -299,7 +299,7 @@ export function SessionSummaryTable({ startDate, endDate }: DateRange) {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col p-0">
           <DialogHeader className="px-6 pt-6 pb-4 border-b">
-            <DialogTitle className="text-lg font-semibold text-gray-800">
+            <DialogTitle className="text-lg font-semibold font-mono text-gray-800">
               Session Transcript
             </DialogTitle>
           </DialogHeader>
@@ -312,8 +312,8 @@ export function SessionSummaryTable({ startDate, endDate }: DateRange) {
                     {Object.entries(badges).map(([key, value]) => (
                       <Badge
                         key={key}
-                        variant="secondary"
-                        className="font-mono bg-black text-white"
+                        // variant="secondary"
+                        className="font-mono bg-[#e05d44] text-white"
                       >
                         {`${key}: ${value}`}
                       </Badge>

@@ -5,7 +5,7 @@ import { PieChartComponent } from "@/components/PieChartComponent";
 import { BarChartComponent } from "@/components/BarChartComponent";
 import { SessionSummaryTable } from "@/components/SessionSummaryTable";
 import { SetupDialog } from "@/components/SetupDialog";
-// import { FeaturesPieChart } from "@/components/FeaturesPieChart";
+import { InvoicesDialog } from "@/components/InvoicesDialog";
 import Navbar from "@/components/Navbar";
 import Cards from "@/components/Cards";
 import DualMonthYearPicker from "@/components/MonthRangePicker";
@@ -21,21 +21,23 @@ export default function Dashboard() {
 
       {/* Header Section */}
       <div className="container mx-auto p-4 space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          {/* Left: Title */}
           <h1 className="text-3xl font-bold tracking-tight font-mono text-white">
             Analytics Dashboard
           </h1>
-          <SetupDialog />
-          <DualMonthYearPicker
-            startDate={startDate}
-            endDate={endDate}
-            onStartDateChange={(date) => {
-              setStartDate(date);
-            }}
-            onEndDateChange={(date) => {
-              setEndDate(date);
-            }}
-          />
+
+          {/* Right: Date picker + buttons */}
+          <div className="flex items-center gap-3">
+            <SetupDialog />
+            <InvoicesDialog />
+            <DualMonthYearPicker
+              startDate={startDate}
+              endDate={endDate}
+              onStartDateChange={setStartDate}
+              onEndDateChange={setEndDate}
+            />
+          </div>
         </div>
 
         {/* Cards Section */}

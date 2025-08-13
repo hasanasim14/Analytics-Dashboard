@@ -6,6 +6,8 @@ import { Button } from "./ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -14,7 +16,6 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { toast } from "sonner";
 import { Checkbox } from "./ui/checkbox";
-import { DialogDescription } from "@radix-ui/react-dialog";
 
 export const SetupDialog = () => {
   const [maxCost, setMaxCost] = useState(0);
@@ -150,10 +151,11 @@ export const SetupDialog = () => {
       <DialogTrigger asChild>
         <Button
           variant="ghost"
-          className="bg-white"
+          className="bg-white font-mono"
           onClick={() => setSetupPageDialog(true)}
         >
           <Settings className="w-5 h-5" />
+          Settings
         </Button>
       </DialogTrigger>
       <DialogDescription className="sr-only">Set up Dialog</DialogDescription>
@@ -164,6 +166,7 @@ export const SetupDialog = () => {
           </DialogTitle>
         </DialogHeader>
 
+        {/* Dialog main body */}
         <div className="space-y-6">
           <div>
             <Label htmlFor="api-key" className="font-mono mb-2">
@@ -192,6 +195,7 @@ export const SetupDialog = () => {
             />
           </div>
 
+          {/* Enable Max Cost */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
               <Checkbox
@@ -230,6 +234,7 @@ export const SetupDialog = () => {
 
           <hr className="border-gray-200" />
 
+          {/* Enable Max Messages */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
               <Checkbox
@@ -265,16 +270,16 @@ export const SetupDialog = () => {
               />
             </div>
           </div>
-
-          <div className="flex justify-end gap-2 w-full pt-2">
-            <Button variant="outline" onClick={handleCancel}>
-              Cancel
-            </Button>
-            <Button onClick={handleSave} disabled={loading}>
-              {loading ? "Saving..." : "Save"}
-            </Button>
-          </div>
         </div>
+
+        <DialogFooter className="sticky bottom-0 bg-white border-t border-gray-200 mt-6 flex justify-end gap-2 py-3">
+          <Button variant="outline" onClick={handleCancel}>
+            Cancel
+          </Button>
+          <Button onClick={handleSave} disabled={loading}>
+            {loading ? "Saving..." : "Save"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

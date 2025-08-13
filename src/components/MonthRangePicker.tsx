@@ -72,11 +72,6 @@ export default function DualMonthYearPicker({
     };
   };
 
-  // Format month and year into "MM-YYYY" string
-  // const formatDateString = (month: number, year: number) => {
-  //   return `${String(month + 1).padStart(2, "0")}-${year}`
-  // }
-
   // Start month picker state
   const [startMonth, setStartMonth] = useState(
     parseDateString(startDate || getCurrentMonthString()).month
@@ -239,11 +234,11 @@ export default function DualMonthYearPicker({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <div className="relative w-[calc(25%-1rem)]">
+        <div className="relative">
           <Button
             variant="outline"
             className={cn(
-              "w-full justify-start text-left font-normal",
+              "justify-start text-left font-normal h-10",
               !internalStartDate && !internalEndDate && "text-muted-foreground",
               className
             )}
@@ -268,6 +263,7 @@ export default function DualMonthYearPicker({
           )}
         </div>
       </PopoverTrigger>
+
       <PopoverContent className="w-auto p-0" align="start">
         <div className="flex">
           {/* Start Month Picker */}
