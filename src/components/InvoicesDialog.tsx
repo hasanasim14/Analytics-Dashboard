@@ -61,13 +61,9 @@ export const InvoicesDialog = () => {
   // for downloading the invoices
   const handleDownload = async (value: string) => {
     setDownloadingItem(value);
-    const queryParams = new URLSearchParams({
-      period: value,
-    });
-
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/InvoiceDownload/${queryParams}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/InvoiceDownload/${value}`,
         {
           method: "GET",
           headers: { "Content-Type": "application/json" },
