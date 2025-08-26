@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Activity, BarChart, Calculator, DollarSign } from "lucide-react";
 import { CardsData, DateRange } from "@/lib/types";
+import { formatStringNumberWithCommas } from "@/lib/utils";
 
 const Cards = ({ startDate, endDate }: DateRange) => {
   const [cardsData, setCardsData] = useState<CardsData | null>(null);
@@ -50,7 +51,7 @@ const Cards = ({ startDate, endDate }: DateRange) => {
         </CardHeader>
         <CardContent>
           <div className="text-3xl font-bold text-gray-900">
-            {cardsData?.totalCost || "Loading..."}
+            {formatStringNumberWithCommas(cardsData?.totalCost) || "Loading..."}
           </div>
         </CardContent>
       </Card>
@@ -68,7 +69,7 @@ const Cards = ({ startDate, endDate }: DateRange) => {
         </CardHeader>
         <CardContent>
           <div className="text-3xl font-bold text-gray-900">
-            {cardsData?.Sessions || "Loading..."}
+            {formatStringNumberWithCommas(cardsData?.Sessions) || "Loading..."}
           </div>
         </CardContent>
       </Card>
