@@ -51,7 +51,8 @@ const Cards = ({ startDate, endDate }: DateRange) => {
         </CardHeader>
         <CardContent>
           <div className="text-3xl font-bold text-gray-900">
-            {formatStringNumberWithCommas(cardsData?.totalCost) || "Loading..."}
+            {`${formatStringNumberWithCommas(cardsData?.totalCost)} PKR` ||
+              "Loading..."}
           </div>
         </CardContent>
       </Card>
