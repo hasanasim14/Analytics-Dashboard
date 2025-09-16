@@ -10,7 +10,6 @@ import {
   User,
   Loader2,
   Search,
-  SearchCheck,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
