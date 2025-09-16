@@ -48,10 +48,8 @@ export default function DateRangePicker({
   return (
     <div className="flex flex-col sm:flex-row items-center gap-6">
       {/* Start Date */}
-      <div className="flex flex-col items-center">
-        <span className="mb-2 text-sm font-medium text-gray-700">
-          Start Date
-        </span>
+      <div className="flex items-center gap-3">
+        <span className="text-sm font-medium text-gray-700">Start Date:</span>
         <Popover>
           <PopoverTrigger asChild>
             <Button
@@ -66,15 +64,14 @@ export default function DateRangePicker({
               mode="single"
               selected={startDate ? parseDate(startDate) : undefined}
               onSelect={handleStartSelect}
-              initialFocus
             />
           </PopoverContent>
         </Popover>
       </div>
 
       {/* End Date */}
-      <div className="flex flex-col items-center">
-        <span className="mb-2 text-sm font-medium text-gray-700">End Date</span>
+      <div className="flex items-center gap-3">
+        <span className="text-sm font-medium text-gray-700">End Date:</span>
         <Popover>
           <PopoverTrigger asChild>
             <Button
@@ -89,7 +86,6 @@ export default function DateRangePicker({
               mode="single"
               selected={endDate ? parseDate(endDate) : undefined}
               onSelect={handleEndSelect}
-              initialFocus
             />
           </PopoverContent>
         </Popover>
