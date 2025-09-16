@@ -10,6 +10,7 @@ import {
   User,
   Loader2,
   Search,
+  SearchCheck,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
@@ -116,16 +117,20 @@ export function SessionSummaryTable({ startDate, endDate }: DateRange) {
       url.searchParams.append("endPeriod", endPeriod);
 
       if (consignNumber && value?.trim()) {
-        // Split consignment numbers into array
         const numbers = value
           .split(",")
           .map((v) => v.trim())
           .filter(Boolean);
         numbers.forEach((num) =>
-          url.searchParams.append("consignmentNumbers[]", num)
+          url.searchParams.append("consignmentNumbers", num)
         );
       } else if (tagNumber && value?.trim()) {
         url.searchParams.append("tag", value.trim());
+      } else if (!tagNumber && !consignNumber) {
+        const query = value?.trim() || "";
+        if (query) {
+          url.searchParams.append("userQuery", query);
+        }
       }
 
       const res = await fetch(url.toString());
@@ -188,12 +193,12 @@ export function SessionSummaryTable({ startDate, endDate }: DateRange) {
                   value={searchValue}
                   onChange={(e) => setSearchValue(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  className="pl-10 pr-4 py-2 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e05d44] focus:border-[#e05d44] transition-colors"
+                  className="font-mono pl-10 pr-4 py-2 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e05d44] focus:border-[#e05d44] transition-colors"
                 />
               </div>
 
               {/* Checkboxes */}
-              <div className="flex items-center gap-6">
+              <div className="flex items-center gap-6 font-mono">
                 <label className="flex items-center gap-2 text-sm text-gray-700">
                   <Checkbox
                     checked={consignNumber}
