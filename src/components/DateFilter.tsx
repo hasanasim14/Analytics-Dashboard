@@ -28,13 +28,18 @@ export default function DateRangePicker({
   setStartDate,
   setEndDate,
 }: DateRangePickerProps) {
+  const [openStart, setOpenStart] = React.useState(false);
+  const [openEnd, setOpenEnd] = React.useState(false);
+
   const handleStartSelect = (date?: Date) => {
     if (!date) return;
     const formatted = format(date, "dd-MM-yyyy");
     setStartDate(formatted);
+
     if (endDate && parseDate(endDate) < date) {
       setEndDate(formatted);
     }
+    setOpenStart(false);
   };
 
   const handleEndSelect = (date?: Date) => {
@@ -43,14 +48,15 @@ export default function DateRangePicker({
       const formatted = format(date, "dd-MM-yyyy");
       setEndDate(formatted);
     }
+    setOpenEnd(false);
   };
 
   return (
-    <div className="flex flex-col sm:flex-row items-center gap-6">
+    <div className="flex flex-col sm:flex-row items-center font-mono gap-6">
       {/* Start Date */}
       <div className="flex items-center gap-3">
         <span className="text-sm font-medium text-gray-700">Start Date:</span>
-        <Popover>
+        <Popover open={openStart} onOpenChange={setOpenStart}>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
@@ -72,7 +78,7 @@ export default function DateRangePicker({
       {/* End Date */}
       <div className="flex items-center gap-3">
         <span className="text-sm font-medium text-gray-700">End Date:</span>
-        <Popover>
+        <Popover open={openEnd} onOpenChange={setOpenEnd}>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
