@@ -180,7 +180,7 @@ export function SessionSummaryTable({ startDate, endDate }: DateRange) {
             Session Summary
           </CardTitle>
         </CardHeader>
-        <CardContent className="px-6 pb-6">
+        <CardContent className="px-6 pb-6 font-mono">
           {/* Filters */}
           <div className="flex justify-end mb-4">
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -192,12 +192,12 @@ export function SessionSummaryTable({ startDate, endDate }: DateRange) {
                   value={searchValue}
                   onChange={(e) => setSearchValue(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  className="font-mono pl-10 pr-4 py-2 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e05d44] focus:border-[#e05d44] transition-colors"
+                  className="pl-10 pr-4 py-2 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e05d44] focus:border-[#e05d44] transition-colors"
                 />
               </div>
 
               {/* Checkboxes */}
-              <div className="flex items-center gap-6 font-mono">
+              <div className="flex items-center gap-6">
                 <label className="flex items-center gap-2 text-sm text-gray-700">
                   <Checkbox
                     checked={consignNumber}
@@ -226,7 +226,7 @@ export function SessionSummaryTable({ startDate, endDate }: DateRange) {
             </div>
           ) : (
             <>
-              <div className="rounded-lg border border-gray-200 overflow-hidden font-mono">
+              <div className="rounded-lg border border-gray-200 overflow-hidden">
                 <Table className="min-w-[1000px]">
                   <TableHeader>
                     <TableRow className="bg-[#e05d44] text-white hover:bg-[#e05c44] transition-colors">
@@ -338,7 +338,7 @@ export function SessionSummaryTable({ startDate, endDate }: DateRange) {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col p-0">
           <DialogHeader className="px-6 pt-6 pb-4 border-b">
-            <DialogTitle className="text-lg font-semibold font-mono text-gray-800">
+            <DialogTitle className="text-lg font-semibold text-gray-800">
               Session Transcript
             </DialogTitle>
           </DialogHeader>
@@ -347,10 +347,7 @@ export function SessionSummaryTable({ startDate, endDate }: DateRange) {
               {badges && Object.keys(badges).length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {Object.entries(badges).map(([key, value]) => (
-                    <Badge
-                      key={key}
-                      className="font-mono bg-[#e05d44] text-white"
-                    >
+                    <Badge key={key} className="bg-[#e05d44] text-white">
                       {`${key}: ${value}`}
                     </Badge>
                   ))}
