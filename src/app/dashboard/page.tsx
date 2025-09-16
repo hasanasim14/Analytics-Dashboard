@@ -10,6 +10,7 @@ import Navbar from "@/components/Navbar";
 import Cards from "@/components/Cards";
 import DualMonthYearPicker from "@/components/MonthRangePicker";
 import FeaturesPieChart from "@/components/FeaturesPieChart";
+import { ComplainsTable } from "@/components/ComplainsTable";
 
 export default function Dashboard() {
   const [startDate, setStartDate] = useState<string>();
@@ -58,6 +59,7 @@ export default function Dashboard() {
 
         {/* Table */}
         <SessionSummaryTable startDate={startDate} endDate={endDate} />
+        <ComplainsTable />
       </div>
     </>
   );

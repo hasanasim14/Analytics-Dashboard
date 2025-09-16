@@ -1,0 +1,99 @@
+"use client";
+
+import * as React from "react";
+import { format } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+
+interface DateRangePickerProps {
+  startDate: string;
+  endDate: string;
+  setStartDate: (value: string) => void;
+  setEndDate: (value: string) => void;
+}
+
+function parseDate(str: string) {
+  const [day, month, year] = str.split("-");
+  return new Date(`${year}-${month}-${day}`);
+}
+
+export default function DateRangePicker({
+  startDate,
+  endDate,
+  setStartDate,
+  setEndDate,
+}: DateRangePickerProps) {
+  const handleStartSelect = (date?: Date) => {
+    if (!date) return;
+    const formatted = format(date, "dd-MM-yyyy");
+    setStartDate(formatted);
+    if (endDate && parseDate(endDate) < date) {
+      setEndDate(formatted);
+    }
+  };
+
+  const handleEndSelect = (date?: Date) => {
+    if (!date) return;
+    if (!startDate || date >= parseDate(startDate)) {
+      const formatted = format(date, "dd-MM-yyyy");
+      setEndDate(formatted);
+    }
+  };
+
+  return (
+    <div className="flex flex-col sm:flex-row items-center gap-6">
+      {/* Start Date */}
+      <div className="flex flex-col items-center">
+        <span className="mb-2 text-sm font-medium text-gray-700">
+          Start Date
+        </span>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className="w-40 justify-between text-gray-800 font-medium"
+            >
+              {startDate || "Select Date"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0 rounded-xl shadow-lg">
+            <Calendar
+              mode="single"
+              selected={startDate ? parseDate(startDate) : undefined}
+              onSelect={handleStartSelect}
+              initialFocus
+            />
+          </PopoverContent>
+        </Popover>
+      </div>
+
+      {/* End Date */}
+      <div className="flex flex-col items-center">
+        <span className="mb-2 text-sm font-medium text-gray-700">End Date</span>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className="w-40 justify-between text-gray-800 font-medium"
+            >
+              {endDate || "Select Date"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0 rounded-xl shadow-lg">
+            <Calendar
+              mode="single"
+              selected={endDate ? parseDate(endDate) : undefined}
+              onSelect={handleEndSelect}
+              initialFocus
+            />
+          </PopoverContent>
+        </Popover>
+      </div>
+    </div>
+  );
+}
