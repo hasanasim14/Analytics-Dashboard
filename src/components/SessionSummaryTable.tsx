@@ -9,6 +9,7 @@ import {
   ChevronsRight,
   User,
   Loader2,
+  Search,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
@@ -32,6 +33,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { DateRange } from "@/lib/types";
 import ReactMarkdown from "react-markdown";
 import { Badge } from "./ui/badge";
+import { Input } from "./ui/input";
+import { Checkbox } from "./ui/checkbox";
 
 interface Session {
   sessionID: string;
@@ -50,10 +53,7 @@ interface TranscriptMessage {
 
 interface ApiResponse {
   data: {
-    Columns: {
-      name: string;
-      id: string;
-    }[];
+    Columns: { name: string; id: string }[];
     Records: Session[];
   };
   success: boolean;
@@ -62,7 +62,6 @@ interface ApiResponse {
 
 interface TranscriptResponse {
   data: TranscriptMessage[];
-  // badges:{};
   badges: Record<string, number>;
   success: boolean;
   message: string;
@@ -79,62 +78,88 @@ export function SessionSummaryTable({ startDate, endDate }: DateRange) {
   const [transcript, setTranscript] = useState<TranscriptMessage[]>([]);
   const [isTranscriptLoading, setIsTranscriptLoading] = useState(false);
   const [badges, setBadges] = useState({});
+  const [consignNumber, setConsignNumber] = useState(false);
+  const [tagNumber, setTagNumber] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
 
   const handleRowClick = async (session: Session) => {
     setSelectedSession(session);
     setIsTranscriptLoading(true);
     setIsDialogOpen(true);
-
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/transcript?sessionid=${session.sessionID}`,
-        {
-          method: "GET",
-        }
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/transcript?sessionid=${session.sessionID}`
       );
-
-      const responseData: TranscriptResponse = await response.json();
+      const responseData: TranscriptResponse = await res.json();
       setTranscript(responseData?.data || []);
-      setBadges(responseData?.badges);
-    } catch (error) {
-      console.error("Failed to fetch transcript:", error);
+      setBadges(responseData?.badges || {});
+    } catch (err) {
+      console.error("Failed to fetch transcript:", err);
     } finally {
       setIsTranscriptLoading(false);
     }
   };
 
-  useEffect(() => {
-    const fetchSessionData = async () => {
-      //Checking the props for current if not found setting it as the current month and year
-      const currentDate = new Date();
-      const currentMonth = `${String(currentDate.getMonth() + 1).padStart(
-        2,
-        "0"
-      )}-${currentDate.getFullYear()}`;
+  const fetchSessionData = async (value?: string) => {
+    setIsLoading(true);
+    const currentDate = new Date();
+    const currentMonth = `${String(currentDate.getMonth() + 1).padStart(
+      2,
+      "0"
+    )}-${currentDate.getFullYear()}`;
+    const startPeriod = startDate || currentMonth;
+    const endPeriod = endDate || currentMonth;
 
-      const startPeriod = startDate || currentMonth;
-      const endPeriod = endDate || currentMonth;
+    try {
+      const url = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/Sessions`);
+      url.searchParams.append("startPeriod", startPeriod);
+      url.searchParams.append("endPeriod", endPeriod);
 
-      try {
-        const url = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/Sessions`);
-        url.searchParams.append("startPeriod", startPeriod);
-        url.searchParams.append("endPeriod", endPeriod);
-
-        const response = await fetch(url.toString());
-
-        const responseData: ApiResponse = await response.json();
-        setSessionData(responseData?.data?.Records);
-        setTotalRecords(responseData?.data?.Records?.length);
-      } catch (error) {
-        console.error("Failed to fetch session data:", error);
-      } finally {
-        setIsLoading(false);
+      if (consignNumber && value?.trim()) {
+        // Split consignment numbers into array
+        const numbers = value
+          .split(",")
+          .map((v) => v.trim())
+          .filter(Boolean);
+        numbers.forEach((num) =>
+          url.searchParams.append("consignmentNumbers[]", num)
+        );
+      } else if (tagNumber && value?.trim()) {
+        url.searchParams.append("tag", value.trim());
       }
-    };
+
+      const res = await fetch(url.toString());
+      const responseData: ApiResponse = await res.json();
+      setSessionData(responseData?.data?.Records || []);
+      setTotalRecords(responseData?.data?.Records?.length || 0);
+    } catch (err) {
+      console.error("Failed to fetch session data:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Initial fetch with no filters
+  useEffect(() => {
     fetchSessionData();
   }, [startDate, endDate]);
 
-  // Calculate pagination values
+  const handleConNumberChange = (checked: boolean) => {
+    setConsignNumber(checked);
+    if (checked) setTagNumber(false);
+  };
+
+  const handleTagChange = (checked: boolean) => {
+    setTagNumber(checked);
+    if (checked) setConsignNumber(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      fetchSessionData(searchValue);
+    }
+  };
+
   const totalPages = Math.ceil(totalRecords / parseInt(pageSize));
   const startItem = (currentPage - 1) * parseInt(pageSize) + 1;
   const endItem = Math.min(currentPage * parseInt(pageSize), totalRecords);
@@ -152,12 +177,48 @@ export function SessionSummaryTable({ startDate, endDate }: DateRange) {
           </CardTitle>
         </CardHeader>
         <CardContent className="px-6 pb-6">
+          {/* Filters */}
+          <div className="flex justify-end mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              {/* Shared search input */}
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <Input
+                  placeholder="Search or enter consignment numbers..."
+                  value={searchValue}
+                  onChange={(e) => setSearchValue(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  className="pl-10 pr-4 py-2 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#e05d44] focus:border-[#e05d44] transition-colors"
+                />
+              </div>
+
+              {/* Checkboxes */}
+              <div className="flex items-center gap-6">
+                <label className="flex items-center gap-2 text-sm text-gray-700">
+                  <Checkbox
+                    checked={consignNumber}
+                    onCheckedChange={handleConNumberChange}
+                    className="data-[state=checked]:bg-[#e05d44] data-[state=checked]:border-[#e05d44]"
+                  />
+                  Consignment Number
+                </label>
+                <label className="flex items-center gap-2 text-sm text-gray-700">
+                  <Checkbox
+                    checked={tagNumber}
+                    onCheckedChange={handleTagChange}
+                    className="data-[state=checked]:bg-[#e05d44] data-[state=checked]:border-[#e05d44]"
+                  />
+                  Tag
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {/* Table */}
           {isLoading ? (
             <div className="flex justify-center items-center h-64">
-              <div className="flex flex-col items-center gap-3">
-                <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-                <p className="text-gray-500">Loading session data...</p>
-              </div>
+              <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+              <p className="text-gray-500 ml-2">Loading session data...</p>
             </div>
           ) : (
             <>
@@ -165,50 +226,29 @@ export function SessionSummaryTable({ startDate, endDate }: DateRange) {
                 <Table className="min-w-[1000px]">
                   <TableHeader>
                     <TableRow className="bg-[#e05d44] text-white hover:bg-[#e05c44] transition-colors">
-                      <TableHead className="font-medium text-white">
-                        Session ID
-                      </TableHead>
-                      <TableHead className="font-medium text-white">
-                        Total Cost
-                      </TableHead>
-                      <TableHead className="font-medium text-white">
-                        Messages
-                      </TableHead>
-                      <TableHead className="font-medium text-white">
-                        Start Time
-                      </TableHead>
-                      <TableHead className="font-medium text-white">
-                        End Time
-                      </TableHead>
-                      <TableHead className="font-medium text-white">
-                        Duration
-                      </TableHead>
+                      <TableHead className="text-white">Session ID</TableHead>
+                      <TableHead className="text-white">Total Cost</TableHead>
+                      <TableHead className="text-white">Messages</TableHead>
+                      <TableHead className="text-white">Start Time</TableHead>
+                      <TableHead className="text-white">End Time</TableHead>
+                      <TableHead className="text-white">Duration</TableHead>
                     </TableRow>
                   </TableHeader>
-
                   <TableBody>
-                    {paginatedData.map((session, index) => (
+                    {paginatedData.map((session) => (
                       <TableRow
-                        key={index}
+                        key={session.sessionID}
                         onClick={() => handleRowClick(session)}
-                        className="cursor-pointer transition-colors hover:bg-gray-50/50"
+                        className="cursor-pointer hover:bg-gray-50/50"
                       >
-                        <TableCell className="font-medium text-gray-800 max-w-[200px] truncate">
-                          {session.sessionID}
-                        </TableCell>
-                        <TableCell className="text-gray-700">
+                        <TableCell>{session.sessionID}</TableCell>
+                        <TableCell>
                           {session.Total_Cost_PKR.toFixed(2)} PKR
                         </TableCell>
-                        <TableCell className="text-gray-700">
-                          {session.Total_Messages}
-                        </TableCell>
-                        <TableCell className="text-gray-700">
-                          {session.Session_Start}
-                        </TableCell>
-                        <TableCell className="text-gray-700">
-                          {session.Session_End}
-                        </TableCell>
-                        <TableCell className="text-gray-700">
+                        <TableCell>{session.Total_Messages}</TableCell>
+                        <TableCell>{session.Session_Start}</TableCell>
+                        <TableCell>{session.Session_End}</TableCell>
+                        <TableCell>
                           {session.Duration_Mins.toFixed(1)} min
                         </TableCell>
                       </TableRow>
@@ -251,18 +291,14 @@ export function SessionSummaryTable({ startDate, endDate }: DateRange) {
                     size="icon"
                     onClick={() => setCurrentPage(1)}
                     disabled={currentPage === 1}
-                    className="text-gray-600 hover:bg-gray-100"
                   >
                     <ChevronsLeft className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() =>
-                      setCurrentPage((prev) => Math.max(prev - 1, 1))
-                    }
+                    onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
                     disabled={currentPage === 1}
-                    className="text-gray-600 hover:bg-gray-100"
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
@@ -273,10 +309,9 @@ export function SessionSummaryTable({ startDate, endDate }: DateRange) {
                     variant="ghost"
                     size="icon"
                     onClick={() =>
-                      setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                      setCurrentPage((p) => Math.min(p + 1, totalPages))
                     }
                     disabled={currentPage === totalPages}
-                    className="text-gray-600 hover:bg-gray-100"
                   >
                     <ChevronRight className="h-4 w-4" />
                   </Button>
@@ -285,7 +320,6 @@ export function SessionSummaryTable({ startDate, endDate }: DateRange) {
                     size="icon"
                     onClick={() => setCurrentPage(totalPages)}
                     disabled={currentPage === totalPages}
-                    className="text-gray-600 hover:bg-gray-100"
                   >
                     <ChevronsRight className="h-4 w-4" />
                   </Button>
@@ -296,6 +330,7 @@ export function SessionSummaryTable({ startDate, endDate }: DateRange) {
         </CardContent>
       </Card>
 
+      {/* Transcript Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col p-0">
           <DialogHeader className="px-6 pt-6 pb-4 border-b">
@@ -303,124 +338,65 @@ export function SessionSummaryTable({ startDate, endDate }: DateRange) {
               Session Transcript
             </DialogTitle>
           </DialogHeader>
-
           {selectedSession && (
             <div className="flex-1 overflow-auto p-6 space-y-6">
               {badges && Object.keys(badges).length > 0 && (
-                <div className="space-y-1">
-                  <div className="flex flex-wrap gap-2">
-                    {Object.entries(badges).map(([key, value]) => (
-                      <Badge
-                        key={key}
-                        // variant="secondary"
-                        className="font-mono bg-[#e05d44] text-white"
-                      >
-                        {`${key}: ${value}`}
-                      </Badge>
-                    ))}
-                  </div>
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(badges).map(([key, value]) => (
+                    <Badge
+                      key={key}
+                      className="font-mono bg-[#e05d44] text-white"
+                    >
+                      {`${key}: ${value}`}
+                    </Badge>
+                  ))}
                 </div>
               )}
-
-              <div className="space-y-1">
-                <h3 className="text-sm font-medium text-gray-500 font-mono">
-                  Session ID
-                </h3>
-                <p className="text-sm font-mono text-gray-800">
-                  {selectedSession.sessionID}
-                </p>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-1">
-                  <h3 className="text-sm font-medium text-gray-500 font-mono">
-                    Total Cost
-                  </h3>
-                  <p className="text-sm text-gray-800 font-mono">
-                    {selectedSession.Total_Cost_PKR.toFixed(2)} PKR
-                  </p>
+              {isTranscriptLoading ? (
+                <div className="flex justify-center items-center h-32">
+                  <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+                  <p className="text-sm text-gray-500">Loading transcript...</p>
                 </div>
-                <div className="space-y-1">
-                  <h3 className="text-sm font-medium text-gray-500 font-mono">
-                    Total Messages
-                  </h3>
-                  <p className="text-sm text-gray-800 font-mono">
-                    {selectedSession.Total_Messages}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <h3 className="text-sm font-medium text-gray-500 font-mono">
-                    Duration
-                  </h3>
-                  <p className="text-sm text-gray-800 font-mono">
-                    {selectedSession.Duration_Mins.toFixed(1)} minutes
-                  </p>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-3">
-                  Conversation
-                </h3>
-                {isTranscriptLoading ? (
-                  <div className="flex justify-center items-center h-32">
-                    <div className="flex flex-col items-center gap-3">
-                      <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
-                      <p className="text-sm text-gray-500">
-                        Loading transcript...
-                      </p>
+              ) : transcript.length > 0 ? (
+                transcript.map((msg, idx) => (
+                  <div
+                    key={idx}
+                    className={`p-4 rounded-lg ${
+                      msg.type === "user"
+                        ? "bg-blue-50 border border-blue-100"
+                        : "bg-gray-50 border border-gray-100"
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div
+                        className={`p-1.5 rounded-full ${
+                          msg.type === "user"
+                            ? "bg-blue-100 text-blue-600"
+                            : "bg-gray-100 text-gray-600"
+                        }`}
+                      >
+                        {msg.type === "user" ? (
+                          <User className="h-4 w-4" />
+                        ) : (
+                          <Bot className="h-4 w-4" />
+                        )}
+                      </div>
+                      <div>
+                        <span className="block text-xs text-gray-400 mb-1">
+                          {new Date(msg.ts).toLocaleString()}
+                        </span>
+                        <ReactMarkdown>{msg.content}</ReactMarkdown>
+                      </div>
                     </div>
                   </div>
-                ) : (
-                  <div className="space-y-3">
-                    {transcript.length > 0 ? (
-                      transcript.map((msg, index) => (
-                        <div
-                          key={index}
-                          className={`p-4 rounded-lg ${
-                            msg.type === "user"
-                              ? "bg-blue-50/50 border border-blue-100"
-                              : "bg-gray-50/50 border border-gray-100"
-                          }`}
-                        >
-                          <div className="flex items-start gap-3">
-                            <div
-                              className={`p-1.5 rounded-full mt-0.5 ${
-                                msg.type === "user"
-                                  ? "bg-blue-100 text-blue-600"
-                                  : "bg-gray-100 text-gray-600"
-                              }`}
-                            >
-                              {msg.type === "user" ? (
-                                <User className="h-4 w-4" />
-                              ) : (
-                                <Bot className="h-4 w-4" />
-                              )}
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex justify-between items-baseline mb-1">
-                                <span className="text-xs text-gray-400">
-                                  {new Date(msg.ts).toLocaleString()}{" "}
-                                </span>
-                              </div>
-                              <ReactMarkdown>
-                                {/* <p className="text-gray-800 whitespace-pre-wrap text-sm"> */}
-                                {msg.content}
-                                {/* </p> */}
-                              </ReactMarkdown>
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="flex justify-center items-center h-32 rounded-lg border border-dashed border-gray-200 bg-gray-50/50">
-                        <p className="text-sm text-gray-500">
-                          No transcript available
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
+                ))
+              ) : (
+                <div className="flex justify-center items-center h-32 border border-dashed rounded-lg">
+                  <p className="text-sm text-gray-500">
+                    No transcript available
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </DialogContent>
